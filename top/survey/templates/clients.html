@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список клиентов</title>
+</head>
+<body>
+User: {{ request.user }}
+<form>
+    <fieldset>
+    {{form}}
+    </fieldset>
+</form>
+{% for client in object_list %}
+    Организация: {{ client.form }}{{ client.name }}       Пройден базовый опрос: {{ client.basic_survey }}</br>
+{% endfor %}
+</body>
+</html>
