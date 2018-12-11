@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Заявки</title>
+</head>
+<body>
+User: {{ request.user }}
+<form>
+    <fieldset>
+    {{form}}
+    </fieldset>
+</form>
+{% for query in object_list %}
+    Клиент: {{ query.client_id.form }} {{ query.client_id.name }} Статус: {{ query.status }} Дата открытия: {{ query.added_at }} Дата посследнего изменения {{ query.changed_at }} <a href="/detail{{ query.id}}">Подробнее</a> </br>
+{% endfor %}
+
+<a href="/main/">На главную</a>
+</body>
+</html>

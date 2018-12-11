@@ -6,18 +6,21 @@ class Client(models.Model):
 
     objects = models.Manager()
 
-    ORG_TYPES = (
-        (u'Государственная', (
-                             (u'Силовики', u'Силовики'),
-                             (u'Гос. компания', u'Гос. компания'),
-                             (u'Гос. учреждение', u'Гос. учреждение'),
-                              )),
-        (u'Негосударственная', (
-                              (u'Ген. подрядчик', u'Ген. подрядчик'),
-                              (u'Частная компания', u'Частная компания'),
-                              (u'SMB', u'SMB'),
-                              )),
-        )
+    GOV = (
+        ('gov', u'Государственная'),
+        ('non_gov', u'Негосударственная'),
+    )
+
+    SMB = u'SMB'
+
+    ORG_SUBTYPES = (
+        ('force', u'Силовики'),
+        ('gov_comp', u'Гос. компания'),
+        ('gov_inst', u'Гос. учреждение'),
+        ('gen_podr', u'Ген. подрядчик'),
+        ('pr_comp', u'Частная компания'),
+        (u'SMB', u'SMB'),
+    )
 
     ORG_FORMS = (
         (u'ООО', u'ООО'),
@@ -29,7 +32,7 @@ class Client(models.Model):
     
     DANET = (
         (u'Да', u'Да'),
-        (u'Нет', u'Нет'),
+        (u'Нет', u'Нет')
     )
 
     form = models.CharField(verbose_name=u'Форма', max_length=16, choices=ORG_FORMS)  # !!! дополнить выпадающий список
@@ -37,10 +40,11 @@ class Client(models.Model):
     inn = models.IntegerField(verbose_name=u'ИНН')  # посмотреть API налоговой для проверки фирмы
 
     basic_survey = models.BooleanField(verbose_name=u'Базовый опрос пройден', default=False)
-    type = models.CharField(verbose_name=u'Тип организации', max_length=64, choices=ORG_TYPES, blank=True)
-    sanctions = models.CharField(verbose_name=u'Санкции', max_length=6, blank=True, choices=DANET)
-    crimea = models.CharField(verbose_name=u'Крым', max_length=6, blank=True, choices=DANET)
-    imp = models.CharField(verbose_name=u'Импортозамещение', max_length=6, blank=True, choices=DANET)
+    governmental = models.CharField(verbose_name=u'Тип', max_length=64, choices=GOV)
+    subtype = models.CharField(verbose_name=u'Подтип', max_length=64, choices=ORG_SUBTYPES, blank=True)
+    sanctions = models.CharField(verbose_name=u'Санкции', max_length=6, default=False, choices=DANET)
+    crimea = models.BooleanField(verbose_name=u'Крым', default=False)
+    imp = models.BooleanField(verbose_name=u'Импортозамещение', default=False)
 
     added_at = models.DateTimeField(auto_now_add=True)
     manager_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -49,17 +53,6 @@ class Client(models.Model):
         verbose_name = u'Клиент'
         verbose_name_plural = u'Клиенты'
         ordering = ['name']
-
-
-class ClientChange(models.Model):
-    client = models.ForeignKey(Client)
-    manager = manager_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
-    changed_at = models.DateTimeField(auto_now=True)
-
-    type = models.CharField(verbose_name=u'Тип организации', max_length=128, blank=True)
-    sanctions = models.CharField(verbose_name=u'Санкции', max_length=128, blank=True)
-    crimea = models.CharField(verbose_name=u'Крым', max_length=128, blank=True)
-    imp = models.CharField(verbose_name=u'Импортозамещение', max_length=128, blank=True)
 
 
 class Contact(models.Model):

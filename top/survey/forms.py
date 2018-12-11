@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 
+from .models import Client
+
 
 class LoginForm(forms.Form):
     username = forms.CharField( max_length=100, required=False)
@@ -32,9 +34,21 @@ class LoginForm(forms.Form):
 class ClientsSortingForm(forms.Form):
 
     search = forms.CharField(required=False)
-    have_queries_first = forms.BooleanField(initial=True, required=False)
     sort_by = forms.ChoiceField(choices=(('-id', u'От новых к старым'),
                                          ('id', u'От старых к новым'),
-                                         ('name', u'По алфавиту')),
-                                          required=False, initial='-id')
+                                         ('name', u'По алфавиту')), required=False, initial='-id')
 
+
+class QuerySortingForm(forms.Form):
+
+    search = forms.CharField(required=False)
+    sort_by = forms.ChoiceField(choices=(('-id', u'От новых к старым'),
+                                         ('id', u'От старых к новым')), required=False, initial='-id')
+    only_open = forms.BooleanField(initial=False, required=False)
+
+
+class ClientInfoForm(forms.ModelForm):
+
+    class Meta:
+        model = Client
+        fields = ['type', 'sanctions', 'crimea', 'imp']

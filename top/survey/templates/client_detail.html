@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ client.form }} {{ client.name }}</title>
+</head>
+<body>
+{% load get_verbose_name %}
+
+{{ client.form }} {{ client.name }}</br>
+{% model_field_verbose_name from client.inn %}: {{ client.inn }}
+</br>
+
+{% block basic_info %}
+
+{% model_field_verbose_name from client.type %}: {{ client.type }} </br>
+{% model_field_verbose_name from client.sanctions %}:{{ client.sanctions }} </br>
+{% model_field_verbose_name from client.crimea %}: {{ client.crimea }} </br>
+{% model_field_verbose_name from client.imp %}: {{ client.imp }} </br>
+</br>
+
+Дата добавления: {{ client.added_at }} </br>
+Дата изменения: {{ client.changed_at }} </br>
+
+
+{% endblock %}
+
+
+{% if client.basic_survey %}
+<a href="client-info-edit/">Редактировать информацию</a>
+{% endif %}
+'''тут оповещение с *** если были изменены какие-то изначальные данные'''
+ </br>
+{% if not client.basic_survey %}
+<a href="client-info-form/">Начать базовый опрос</a>
+{% endif %}
+
+{% if client.basic_survey %}
+<a href="client-info-form/">Новый запрос</a>
+{% endif %}
+
+</body>
+</html>
+
