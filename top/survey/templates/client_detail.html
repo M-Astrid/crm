@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <title>{{ client.form }} {{ client.name }}</title>
 </head>
@@ -9,6 +10,7 @@
 
 {{ client.form }} {{ client.name }}</br>
 {% model_field_verbose_name from client.inn %}: {{ client.inn }}
+</br>
 </br>
 
 {% block basic_info %}
@@ -20,23 +22,29 @@
 </br>
 
 Дата добавления: {{ client.added_at }} </br>
-Дата изменения: {{ client.changed_at }} </br>
+
+{% if client.basic_survey %}
+<a href="client-info-edit/">Редактировать информацию</a>
+{% endif %}
+</br>
+</br>
+{% if changes %}
+<span style="color: #ff6600;">***В анкету были внесены изменения {{ client.changed_at }}</span></br>
+<a href="hist/">История изменений</a>
+{% endif %}
 
 
 {% endblock %}
 
 
-{% if client.basic_survey %}
-<a href="client-info-edit/">Редактировать информацию</a>
-{% endif %}
-'''тут оповещение с *** если были изменены какие-то изначальные данные'''
  </br>
 {% if not client.basic_survey %}
 <a href="client-info-form/">Начать базовый опрос</a>
 {% endif %}
-
+</br>
+</br>
 {% if client.basic_survey %}
-<a href="client-info-form/">Новый запрос</a>
+<a href="new-query/">Новый запрос</a>
 {% endif %}
 
 </body>

@@ -2,11 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.views.generic import ListView
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 
 from .models import Client, Query, Contact, Item, ClientChange
-from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm
+from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm
 
 
 # auth_views------------------------------------------------------------------------------------------------------------
@@ -89,19 +87,11 @@ def client(request, num):
                                                   'changes': changes})
 
 
-def client_hist(request, num, ch=None):
-
-    template_name = 'client_hist.html'
-
+def client_hist(request, num):
     c = get_object_or_404(Client, id=num)
     changes = ClientChange.objects.all()
-    old = ch
-    if old is not None:
-        old = get_object_or_404(ClientChange, id=ch)
-        template_name = 'hist_old.html'
-    return render(request, template_name, {'client': c,
-                                           'changes': changes,
-                                           'old': old})
+    return render(request, 'client_hist.html', {'client': c,
+                                                  'changes': changes})
 
 
 def client_info_form_view(request, num):
@@ -131,18 +121,15 @@ def client_info_edit(request, num):
         form = ClientInfoForm(request.POST, instance=c)
         if form.is_valid():
             fields = ['type', 'sanctions', 'crimea', 'imp']
-            msg = ''
             for i in fields:
-                if old.get(i) != form.cleaned_data.get(i):
-                    msg += 'Изменено поле "' + i + '":' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
-            if msg != '':
-                change = ClientChange(type=old.get('type'), sanctions=old.get('sanctions'), crimea=old.get('crimea'), imp=old.get('imp'))
-                change.change = msg
-                change.manager = request.user
-                change.client = c
-                change.save()
-                form.save()
-            #return HttpResponse(msg)
+                if old.get(i) != request.POST.get(i):
+                    change = ClientChange()
+                    change.change = old.get(i) + ' => ' + form.cleaned_data.get(i)
+                    change.field = i
+                    change.manager = request.user
+                    change.client = c
+                    change.save()
+            form.save()
             return HttpResponseRedirect('/clients/'+num+'/')
     else:
         form = ClientInfoForm(initial={'type': c.type,
@@ -171,42 +158,10 @@ class QueryList(ListView):
         if self.form.cleaned_data.get('sort_by'):
             queryset = queryset.order_by(self.form.cleaned_data.get('sort_by'))
         if self.form.cleaned_data.get('only_open'):
-            queryset = queryset.filter(status_in=['query', 'lead', 'order'])
+            queryset = queryset.filter(status_in=['query','lead','order'])
             return queryset
 
-    #def get_context_data(self, **kwargs)
+    def get_context_data(self, **kwargs):
+            context = super(QueryList, self).get_context_data(**kwargs)
+            context['form'] = self.forms
 
-
-def new_query(request, num):
-    if request.method == "POST":
-        client = Client.objects.get(pk=num)
-        manager = request.user
-        form = QueryForm(request.POST)
-        if form.is_valid():
-            query = Query(client=client, manager=manager, status=u'Запрос')
-            name = u'Заказ на ' + form.cleaned_data.get['product_type'] + u' от ' + query.added_at.strftime('%d.%m.%Y')
-            query.name = name
-            query.survey = True
-            query.save()
-            qs = Item.objects.filter(product_type=form.cleaned_data.get['product_type'],
-                                     #imp=client.imp,
-                                     #sanctions=form.cleaned_data.get['sanctions'],
-                                     #crimea=form.cleaned_data.get['crimea'],
-                                     )
-            # parser
-
-            for i in qs:
-                it = qs.first()
-                dif = 0
-                 
-
-
-
-
-    else:
-        form = QueryForm()
-        return render(request, 'query_form.html', {'form': form})
-
-
-def parser(request):
-    it = ['upgrade', 'certificate', 'fav_brands', 'sanctions', 'crimea', 'imp']

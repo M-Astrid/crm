@@ -43,26 +43,43 @@ class Client(models.Model):
     imp = models.CharField(verbose_name=u'Импортозамещение', max_length=6, blank=True, choices=DANET)
 
     added_at = models.DateTimeField(auto_now_add=True)
-    manager_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now=True)
+    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     class Meta:
         verbose_name = u'Клиент'
         verbose_name_plural = u'Клиенты'
         ordering = ['name']
 
+    def get_field_names(self):
+        fields = [f.name for f in self._meta.get_fields()]
+        for i in ['id', 'form', 'name', 'inn', 'basic_survey', 'manager', 'changed_at', 'added_at']:
+            fields.remove(i)
+        return fields
+
 
 class ClientChange(models.Model):
-    client = models.ForeignKey(Client)
-    manager = manager_id = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
-    changed_at = models.DateTimeField(auto_now=True)
 
-    type = models.CharField(verbose_name=u'Тип организации', max_length=128, blank=True)
-    sanctions = models.CharField(verbose_name=u'Санкции', max_length=128, blank=True)
-    crimea = models.CharField(verbose_name=u'Крым', max_length=128, blank=True)
-    imp = models.CharField(verbose_name=u'Импортозамещение', max_length=128, blank=True)
+    objects = models.Manager()
+
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    change = models.TextField(blank=True)
+
+    type = models.CharField(verbose_name=u'Тип организации(old)', max_length=64, blank=True)
+    sanctions = models.CharField(verbose_name=u'Санкции(old)', max_length=6, blank=True)
+    crimea = models.CharField(verbose_name=u'Крым(old)', max_length=6, blank=True)
+    imp = models.CharField(verbose_name=u'Импортозамещение(old)', max_length=6, blank=True)
+
+    class Meta:
+        ordering = ['-id']
 
 
 class Contact(models.Model):
+
+    objects = models.Manager()
+
     first_name = models.CharField(verbose_name=u'Имя', max_length=64)
     father_name = models.CharField(verbose_name=u'Отчество', max_length=64)
     last_name = models.CharField(verbose_name=u'Фамилия', max_length=64)
@@ -79,6 +96,9 @@ class Contact(models.Model):
 
 
 class Item(models.Model):
+
+    objects = models.Manager()
+
     KRITERII = (
         ('+','+'),
         ('-','-'),
@@ -86,11 +106,24 @@ class Item(models.Model):
     )
 
     PRICE_CATEGORIES = (
-        ('prem', u'Premium'),
-        ('avrg', u'Средняя цен. кат.'),
-        ('noname', u'No name'),
+        (u'(1)Premium', u'(1)Premium'),
+        (u'(2)Средняя цен. кат.', u'(2)Средняя цен. кат.'),
+        (u'(3)No name', u'(3)No name'),
     )
 
+    PR_TYPES = (
+        ('server', u'Сервера'),
+        ('shd', u'СХД'),
+    )
+
+    CERTIFICATE = (
+        ('none', u'нет'),
+        ('torp', u'ТОРП'),
+        ('st1', u'СТ1'),
+        ('eac', u'EAC'),
+    )
+
+    product_type = models.CharField(verbose_name=u'Направление', max_length=64, choices=PR_TYPES)
     group = models.CharField(max_length=64)
     model_row = models.CharField(max_length=64)
     vendor1 = models.CharField(max_length=64)
@@ -100,9 +133,10 @@ class Item(models.Model):
     model2 = models.CharField(max_length=64)
     SKU2 = models.CharField(max_length=64)
     imp = models.CharField(verbose_name=u'Импортозамещение', max_length=8, choices=KRITERII)
-    ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, choices=KRITERII)
-    torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, choices=KRITERII)
-    eac = models.CharField(verbose_name=u'EAC', max_length=8, choices=KRITERII)
+    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, choices=CERTIFICATE)
+    #ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, choices=KRITERII)
+    #torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, choices=KRITERII)
+    #eac = models.CharField(verbose_name=u'EAC', max_length=8, choices=KRITERII)
     sanctions = models.CharField(verbose_name=u'Санкции', max_length=8, choices=KRITERII)
     crimea = models.CharField(verbose_name=u'Крым', max_length=8, choices=KRITERII)
     price_bracket = models.CharField(verbose_name=u'Бюджет', max_length=64, choices=PRICE_CATEGORIES)
@@ -114,12 +148,15 @@ class Item(models.Model):
 
 
 class Query(models.Model):
+
+    objects = models.Manager()
+
     STATUSES = (
-        ('query', u'Запрос'),
-        ('lead', u'Лид'),
-        ('order', u'Заявка'),
-        ('declined', u'Отказ'),
-        ('successful', u'Успешно реализован'),
+        (u'Запрос', u'Запрос'),
+        (u'Лид', u'Лид'),
+        (u'Заявка', u'Заявка'),
+        (u'Отказ', u'Отказ'),
+        (u'Успешно реализован', u'Успешно реализован'),
     )
     PR_TYPES = (
         ('server', u'Сервера'),
@@ -139,8 +176,14 @@ class Query(models.Model):
         ('eac', u'EAC'),
     )
 
+    DANET = (
+        (u'Да', u'Да'),
+        (u'Нет', u'Нет'),
+    )
+
     name = models.CharField(verbose_name=u'Название заказа', max_length=128, blank=True)
-    client_id = models.ForeignKey(Client, on_delete=models.DO_NOTHING)
+    client = models.ForeignKey(Client, on_delete=models.DO_NOTHING)
+    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
     status = models.CharField(verbose_name=u'Статус', max_length=64, choices=STATUSES)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -155,9 +198,10 @@ class Query(models.Model):
 
     survey = models.BooleanField(verbose_name=u'Опрос пройден', default=False)
     product_type = models.CharField(verbose_name=u'Направление', max_length=64, choices=PR_TYPES)
-    upgrade = models.BooleanField(verbose_name=u'Апгрейд')
+    upgrade = models.BooleanField(verbose_name=u'Апгрейд', choices=DANET)
     fav_brands = models.CharField(verbose_name=u'Ценовая категория предпочитаемых брендов', max_length=128, choices=PRICE_CAT)
-    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, null=True, choices=CERTIFICATE)
+    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, choices=CERTIFICATE)
+    survey_comments = models.TextField(verbose_name=u'Примечания к опросу', blank=True)
 
     class Meta:
         verbose_name = u'Заявка'

@@ -2,25 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c15bc4a8-4280-41e1-9438-b7b87ab49fab" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0004_auto_20181209_1402.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0005_auto_20181210_1052.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0006_auto_20181210_1124.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0007_auto_20181210_1456.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0008_auto_20181210_1459.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0009_auto_20181210_2232.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/models со старыми кортежами.rar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/models со старыми кортежами/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/templates/client_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/templates/client_info_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/templates/queries.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/top/survey/templatetags/get_verbose_name.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/django-history" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pip-delete-this-directory.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0010_auto_20181211_1703.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0011_auto_20181211_1735.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0012_client_changed_at.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/migrations/0013_auto_20181212_0811.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/templates/client_hist.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/templates/hist_old.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/top/survey/templates/query_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/top/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/top/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/top/survey/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/top/survey/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/top/survey/models со старыми кортежами/models.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/top/survey/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/top/survey/templates/client_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/templates/client_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/top/survey/templates/client_info_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/templates/client_info_form.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/top/survey/templates/clients.html" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/templates/clients.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/top/survey/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/templates/main.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/top/survey/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/top/survey/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/top/survey/views.py" afterDir="false" />
     </list>
@@ -35,8 +35,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/top/survey/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="15" column="92" selection-start-line="15" selection-start-column="92" selection-end-line="15" selection-end-column="92" />
+            <state relative-caret-position="238">
+              <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -45,33 +45,12 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/top/survey/templates/main.html">
+        <entry file="file://$PROJECT_DIR$/top/survey/templates/client_detail.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/top/survey/forms.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="850">
-              <caret line="53" column="55" selection-start-line="53" selection-start-column="55" selection-end-line="53" selection-end-column="55" />
+            <state relative-caret-position="427">
+              <caret line="46" column="18" selection-start-line="46" selection-start-column="18" selection-end-line="46" selection-end-column="18" />
               <folding>
-                <element signature="e#0#24#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/top/survey/models.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="512">
-              <caret line="61" column="75" selection-start-line="61" selection-start-column="75" selection-end-line="61" selection-end-column="75" />
-              <folding>
-                <element signature="e#0#28#0" expanded="true" />
+                <element signature="n#style#0;n#span#0;n#p#0;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -80,28 +59,52 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/top/survey/templates/client_info_form.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="8" column="20" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
+            <state relative-caret-position="323">
+              <caret line="19" column="7" lean-forward="true" selection-start-line="19" selection-start-column="7" selection-end-line="19" selection-end-column="7" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/top/survey/templates/client_detail.html">
+        <entry file="file://$PROJECT_DIR$/top/survey/templates/query_form.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="10" column="61" selection-start-line="10" selection-start-column="61" selection-end-line="10" selection-end-column="61" />
+            <state relative-caret-position="255">
+              <caret line="15" column="14" selection-start-line="15" selection-start-column="14" selection-end-line="15" selection-end-column="14" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/top/survey/forms.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="308">
+              <caret line="52" column="22" lean-forward="true" selection-start-line="52" selection-start-column="22" selection-end-line="52" selection-end-column="22" />
+              <folding>
+                <element signature="e#0#24#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/top/survey/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1683">
-              <caret line="108" column="9" selection-start-line="108" selection-start-column="9" selection-end-line="108" selection-end-column="9" />
+            <state relative-caret-position="325">
+              <caret line="200" column="16" selection-start-line="200" selection-start-column="16" selection-end-line="200" selection-end-column="16" />
               <folding>
                 <element signature="e#0#54#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/top/survey/models.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="102">
+              <caret line="111" column="5" lean-forward="true" selection-start-line="111" selection-start-column="5" selection-end-line="111" selection-end-column="5" />
+              <folding>
+                <element signature="e#0#28#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -112,8 +115,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="HTML File" />
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -121,6 +124,10 @@
     <findStrings>
       <find>grop</find>
       <find>requered</find>
+      <find>force_uni</find>
+      <find>current</find>
+      <find>client_id</find>
+      <find>client</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -130,22 +137,28 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/survey/models.py" />
-        <option value="$PROJECT_DIR$/top/survey/admin.py" />
-        <option value="$PROJECT_DIR$/top/top/settings.py" />
         <option value="$PROJECT_DIR$/top/top/urls.py" />
         <option value="$PROJECT_DIR$/top/survey/permissions.py" />
         <option value="$PROJECT_DIR$/top/survey/auth_views.py" />
         <option value="$PROJECT_DIR$/top/survey/templates/login.html" />
         <option value="$PROJECT_DIR$/top/survey/templates/queries.html" />
         <option value="$PROJECT_DIR$/top/survey/templates/main.html" />
-        <option value="$PROJECT_DIR$/top/survey/templates/clients.html" />
         <option value="$PROJECT_DIR$/top/survey/templatetags/get_verbose_name.py" />
-        <option value="$PROJECT_DIR$/top/survey/forms.py" />
-        <option value="$PROJECT_DIR$/top/survey/templates/client_info_form.html" />
-        <option value="$PROJECT_DIR$/top/survey/urls.py" />
-        <option value="$PROJECT_DIR$/top/survey/views.py" />
+        <option value="$PROJECT_DIR$/top/survey/django_history/models.py" />
+        <option value="$PROJECT_DIR$/top/survey/django_history/current_context.py" />
+        <option value="$PROJECT_DIR$/top/top/settings.py" />
+        <option value="$PROJECT_DIR$/top/survey/admin.py" />
+        <option value="$PROJECT_DIR$/top/survey/templates/clients.html" />
+        <option value="$PROJECT_DIR$/top/survey/templates/hist_old.py" />
+        <option value="$PROJECT_DIR$/top/survey/templates/hist_old.html" />
+        <option value="$PROJECT_DIR$/top/survey/templates/client_hist.html" />
         <option value="$PROJECT_DIR$/top/survey/templates/client_detail.html" />
+        <option value="$PROJECT_DIR$/top/survey/urls.py" />
+        <option value="$PROJECT_DIR$/top/survey/templates/client_info_form.html" />
+        <option value="$PROJECT_DIR$/top/survey/templates/query_form.html" />
+        <option value="$PROJECT_DIR$/top/survey/forms.py" />
         <option value="$PROJECT_DIR$/top/survey/models.py" />
+        <option value="$PROJECT_DIR$/top/survey/views.py" />
       </list>
     </option>
   </component>
@@ -160,7 +173,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -190,12 +202,20 @@
               <item name="top" type="b2602c69:ProjectViewProjectNode" />
               <item name="top" type="462c0819:PsiDirectoryNode" />
               <item name="top" type="462c0819:PsiDirectoryNode" />
+              <item name="survey" type="462c0819:PsiDirectoryNode" />
+              <item name="templatetags" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="top" type="b2602c69:ProjectViewProjectNode" />
+              <item name="top" type="462c0819:PsiDirectoryNode" />
+              <item name="top" type="462c0819:PsiDirectoryNode" />
               <item name="top" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -232,7 +252,7 @@
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.4955357" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.21502976" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -250,19 +270,28 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
+    <layout-to-restore>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21502976" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout-to-restore>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/survey/models.py" />
-    <entry file="file://$PROJECT_DIR$/top/survey/admin.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="26" selection-start-line="6" selection-start-column="26" selection-end-line="6" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/top/top/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
@@ -270,13 +299,6 @@
           <folding>
             <element signature="e#627#668#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/top/top/settings.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="39" column="13" selection-start-line="39" selection-start-column="13" selection-end-line="39" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -311,16 +333,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/templatetags/get_verbose_name.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="529">
-          <caret line="144" lean-forward="true" selection-start-line="144" selection-end-line="144" />
-          <folding>
-            <element signature="e#0#54#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37-32/Lib/site-packages/django/contrib/auth/decorators.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -328,20 +340,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/templates/clients.html">
+    <entry file="file://$PROJECT_DIR$/top/survey/django_history/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="21" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="21" />
+        <state relative-caret-position="255">
+          <caret line="15" column="42" lean-forward="true" selection-start-line="15" selection-start-column="42" selection-end-line="15" selection-end-column="42" />
+          <folding>
+            <element signature="e#16#44#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/urls.py">
+    <entry file="file://$PROJECT_DIR$/top/survey/django_history/current_context.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="15" column="92" selection-start-line="15" selection-start-column="92" selection-end-line="15" selection-end-column="92" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="500">
+          <caret line="77" column="43" selection-start-line="77" selection-start-column="43" selection-end-line="77" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/top/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="49" column="61" selection-start-line="49" selection-start-column="61" selection-end-line="49" selection-end-column="61" />
         </state>
       </provider>
     </entry>
@@ -352,46 +371,110 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/forms.py">
+    <entry file="file://$PROJECT_DIR$/top/survey/templatetags/get_verbose_name.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="850">
-          <caret line="53" column="55" selection-start-line="53" selection-start-column="55" selection-end-line="53" selection-end-column="55" />
-          <folding>
-            <element signature="e#0#24#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/templates/client_info_form.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="8" column="20" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/templates/client_detail.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="61" selection-start-line="10" selection-start-column="61" selection-end-line="10" selection-end-column="61" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/top/survey/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1683">
-          <caret line="108" column="9" selection-start-line="108" selection-start-column="9" selection-end-line="108" selection-end-column="9" />
+        <state relative-caret-position="289">
+          <caret line="17" column="28" selection-start-line="17" selection-start-column="4" selection-end-line="17" selection-end-column="28" />
           <folding>
             <element signature="e#0#54#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/admin.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" selection-start-line="7" selection-end-line="7" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/hist_old.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/hist_old.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="34" selection-start-line="7" selection-start-column="34" selection-end-line="7" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/clients.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret lean-forward="true" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/client_hist.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="20" column="21" selection-start-line="20" selection-start-column="21" selection-end-line="20" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/urls.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/client_detail.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="427">
+          <caret line="46" column="18" selection-start-line="46" selection-start-column="18" selection-end-line="46" selection-end-column="18" />
+          <folding>
+            <element signature="n#style#0;n#span#0;n#p#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/query_form.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="14" selection-start-line="15" selection-start-column="14" selection-end-line="15" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/templates/client_info_form.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" column="7" lean-forward="true" selection-start-line="19" selection-start-column="7" selection-end-line="19" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/top/survey/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="512">
-          <caret line="61" column="75" selection-start-line="61" selection-start-column="75" selection-end-line="61" selection-end-column="75" />
+        <state relative-caret-position="102">
+          <caret line="111" column="5" lean-forward="true" selection-start-line="111" selection-start-column="5" selection-end-line="111" selection-end-column="5" />
           <folding>
             <element signature="e#0#28#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/forms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="52" column="22" lean-forward="true" selection-start-line="52" selection-start-column="22" selection-end-line="52" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#24#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/top/survey/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="325">
+          <caret line="200" column="16" selection-start-line="200" selection-start-column="16" selection-end-line="200" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#54#0" expanded="true" />
           </folding>
         </state>
       </provider>

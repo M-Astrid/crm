@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from .models import Client
+from .models import Client, Query
 
 
 class LoginForm(forms.Form):
@@ -52,3 +52,10 @@ class ClientInfoForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ['type', 'sanctions', 'crimea', 'imp']
+
+
+class QueryForm(forms.ModelForm):
+
+    class Meta:
+        model = Query
+        fields = ['product_type', 'upgrade', 'certificate', 'fav_brands', 'survey_comments']

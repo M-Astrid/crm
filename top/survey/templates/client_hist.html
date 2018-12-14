@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>История изменений</title>
+</head>
+<body>
+{% load get_verbose_name %}
+
+{{ client.form }} {{ client.name }}</br>
+{% model_field_verbose_name from client.inn %}: {{ client.inn }}
+</br>
+</br>
+<b>Актуальные данные:</b> </br>
+{% model_field_verbose_name from client.type %}: {{ client.type }} </br>
+{% model_field_verbose_name from client.sanctions %}:{{ client.sanctions }} </br>
+{% model_field_verbose_name from client.crimea %}: {{ client.crimea }} </br>
+{% model_field_verbose_name from client.imp %}: {{ client.imp }} </br>
+</br>
+
+<b>История изменений:</b></br>
+
+{% for change in changes %}
+
+{{ change.changed_at }} {{ change.change }} кем: {{ change.manager }}</br>
+<a href="{{ change.id }}">Старая версия</a></br>
+</br>
+{% endfor %}
+</body>
+</html>
