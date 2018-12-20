@@ -30,6 +30,7 @@ class Client(models.Model):
     DANET = (
         (u'Да', u'Да'),
         (u'Нет', u'Нет'),
+        (u'?', u'?'),
     )
 
     form = models.CharField(verbose_name=u'Форма', max_length=16, choices=ORG_FORMS)  # !!! дополнить выпадающий список
@@ -117,13 +118,36 @@ class Item(models.Model):
     )
 
     CERTIFICATE = (
-        ('none', u'нет'),
+        (u'?', u'?'),
         ('torp', u'ТОРП'),
         ('st1', u'СТ1'),
         ('eac', u'EAC'),
     )
 
-    product_type = models.CharField(verbose_name=u'Направление', max_length=64, choices=PR_TYPES)
+    FORM_FACT = (
+        (u'Форм-фактор Rack', u'Форм-фактор Rack'),
+        (u'Форм-фактор Tower', u'Форм-фактор Tower'),
+        (u'Блейд-сервер', u'Блейд-сервер'),
+    )
+
+    SHD_TYPES = (
+        (u'СХД начального уровня', u'СХД начального уровня'),
+        (u'СХД общего назначения', u'СХД общего назначения'),
+        (u'Гибридная СХД', u'Гибридная СХД'),
+        (u'СХД для резервного копирования', u'СХД для резервного копирования'),
+        (u'СХД высокопроизводительного класса', u'СХД высокопроизводительного класса'),
+        (u'СХД система NAS', u'СХД система NAS'),
+        (u'СХД для расширения VMware', u'СХД для расширения VMware'),
+        (u'Программно-определяемая СХД', u'Программно-определяемая СХД'),
+        (u'СХД для видеоконтента', u'СХД для видеоконтента'),
+    )
+
+    DANET = (
+        (u'Да', u'Да'),
+        (u'Нет', u'Нет'),
+        (u'?', u'?'),
+    )
+
     group = models.CharField(max_length=64)
     model_row = models.CharField(max_length=64)
     vendor1 = models.CharField(max_length=64)
@@ -132,14 +156,20 @@ class Item(models.Model):
     vendor2 = models.CharField(max_length=64)
     model2 = models.CharField(max_length=64)
     SKU2 = models.CharField(max_length=64)
-    imp = models.CharField(verbose_name=u'Импортозамещение', max_length=8, choices=KRITERII)
-    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, choices=CERTIFICATE)
+
+    product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
+    form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', max_length=64, blank=True, null=True, choices=FORM_FACT)
+    type = models.CharField(verbose_name=u'Тип СХД', max_length=64, blank=True, null=True, choices=SHD_TYPES)
+    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, default=u'?', choices=CERTIFICATE)
+    upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
     #ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, choices=KRITERII)
     #torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, choices=KRITERII)
     #eac = models.CharField(verbose_name=u'EAC', max_length=8, choices=KRITERII)
-    sanctions = models.CharField(verbose_name=u'Санкции', max_length=8, choices=KRITERII)
-    crimea = models.CharField(verbose_name=u'Крым', max_length=8, choices=KRITERII)
+    sanctions = models.CharField(verbose_name=u'Санкции', max_length=8, choices=DANET)
+    crimea = models.CharField(verbose_name=u'Крым', max_length=8, choices=DANET)
+    imp = models.CharField(verbose_name=u'Импортозамещение', max_length=6, blank=True, choices=DANET)
     price_bracket = models.CharField(verbose_name=u'Бюджет', max_length=64, choices=PRICE_CATEGORIES)
+
 
     class Meta:
         verbose_name = u'Товар'
@@ -163,6 +193,24 @@ class Query(models.Model):
         ('shd', u'СХД'),
     )
 
+    FORM_FACT = (
+        (u'Форм-фактор Rack', u'Форм-фактор Rack'),
+        (u'Форм-фактор Tower', u'Форм-фактор Tower'),
+        (u'Блейд-сервер', u'Блейд-сервер'),
+    )
+
+    SHD_TYPES = (
+        (u'СХД начального уровня', u'СХД начального уровня'),
+        (u'СХД общего назначения', u'СХД общего назначения'),
+        (u'Гибридная СХД', u'Гибридная СХД'),
+        (u'СХД для резервного копирования', u'СХД для резервного копирования'),
+        (u'СХД высокопроизводительного класса', u'СХД высокопроизводительного класса'),
+        (u'СХД система NAS', u'СХД система NAS'),
+        (u'СХД для расширения VMware', u'СХД для расширения VMware'),
+        (u'Программно-определяемая СХД', u'Программно-определяемая СХД'),
+        (u'СХД для видеоконтента', u'СХД для видеоконтента'),
+    )
+
     PRICE_CAT = (
         ('noname', u'No name'),
         ('avrg', u'Средняя цена'),
@@ -183,7 +231,7 @@ class Query(models.Model):
 
     name = models.CharField(verbose_name=u'Название заказа', max_length=128, blank=True)
     client = models.ForeignKey(Client, on_delete=models.DO_NOTHING)
-    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    manager = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
 
     status = models.CharField(verbose_name=u'Статус', max_length=64, choices=STATUSES)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -197,10 +245,14 @@ class Query(models.Model):
     comments = models.TextField(verbose_name=u'Примечания к заказу', blank=True)
 
     survey = models.BooleanField(verbose_name=u'Опрос пройден', default=False)
-    product_type = models.CharField(verbose_name=u'Направление', max_length=64, choices=PR_TYPES)
-    upgrade = models.BooleanField(verbose_name=u'Апгрейд', choices=DANET)
+
+    product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
+    form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', max_length=64, null=True, choices=FORM_FACT)
+    type = models.CharField(verbose_name=u'Тип СХД', max_length=64, null=True, choices=SHD_TYPES)
+    upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
+    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, default=u'EAC', choices=CERTIFICATE)
     fav_brands = models.CharField(verbose_name=u'Ценовая категория предпочитаемых брендов', max_length=128, choices=PRICE_CAT)
-    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, choices=CERTIFICATE)
+
     survey_comments = models.TextField(verbose_name=u'Примечания к опросу', blank=True)
 
     class Meta:

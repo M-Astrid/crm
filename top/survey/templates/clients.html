@@ -6,6 +6,7 @@
 </head>
 <body>
 User: {{ request.user }}
+<a href="/add-client/">Добавить клиента</a>
 <form>
     <fieldset>
     {{form}}
@@ -16,8 +17,9 @@ User: {{ request.user }}
     Организация: {{ client.form }}"{{ client.name }}"</br>
     Пройден базовый опрос: {{ client.basic_survey }}</br>
     Тип организации: {{ client.type }} </br>
-Санкции: {{ client.sanctions }}</br>
+    Санкции: {{ client.sanctions }}</br>
     <a href="{{ client.id }}">Подробнее</a></br>
+</br>
 {% endfor %}
 </br>
 </br>

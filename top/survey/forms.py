@@ -58,4 +58,11 @@ class QueryForm(forms.ModelForm):
 
     class Meta:
         model = Query
-        fields = ['product_type', 'upgrade', 'certificate', 'fav_brands', 'survey_comments']
+        fields = ['product_type', 'form_factor', 'type', 'upgrade', 'certificate', 'fav_brands', 'survey_comments']
+
+
+class AddClientForm(forms.ModelForm):
+
+    class Meta:
+        model = Client
+        fields = ['form', 'name', 'inn']

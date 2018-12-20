@@ -142,7 +142,6 @@ def client_info_edit(request, num):
                 change.client = c
                 change.save()
                 form.save()
-            #return HttpResponse(msg)
             return HttpResponseRedirect('/clients/'+num+'/')
     else:
         form = ClientInfoForm(initial={'type': c.type,
@@ -189,19 +188,40 @@ def new_query(request, num):
             query.survey = True
             query.save()
             qs = Item.objects.filter(product_type=form.cleaned_data.get['product_type'],
-                                     #imp=client.imp,
-                                     #sanctions=form.cleaned_data.get['sanctions'],
-                                     #crimea=form.cleaned_data.get['crimea'],
+                                     form_factor=form.cleaned_data.get['form_factor'],
+                                     type=form.cleaned_data.get['type'],
+                                     upgrade=form.cleaned_data.get['upgrade'],
                                      )
-            # parser
+            total, one, more = {}, {}, {}
+            for obj in qs:
+                dif = []
+                k = 0
+                if obj.certificate != form.cleaned_data.get['certificate']:
+                    k += 1
+                    dif.append('certificate')
+                if obj.price_bracket != form.cleaned_data.get['fav_brands']:
+                    k += 1
+                    dif.append('price_bracket')
+                if obj.imp != client.imp:
+                    k += 1
+                    dif.append('imp')
+                if obj.sanctions != client.sanctions:
+                    k += 1
+                    dif.append('sanctions')
+                if obj.crimea != client.crimea:
+                    k += 1
+                    dif.append('crimea')
 
-            for i in qs:
-                it = qs.first()
-                dif = 0
-                 
-
-
-
+                if k == 0:
+                    total[obj.id] = dif
+                if k == 1:
+                    one[obj.id] = dif
+                if k > 1:
+                    more[obj.id] = dif
+            return render(request, 'query_result_list.html', {total: 'total',
+                                                              one: 'one',
+                                                              more: 'more',
+                                                              })
 
     else:
         form = QueryForm()
