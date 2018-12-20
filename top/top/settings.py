@@ -118,7 +118,24 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/astrid/rest/files/static'
+STATIC_ROOT = 'C:/Users/astrid/Django-projects/top/top/static'
+
+STATICFILES_DIRS = (
+
+    os.path.join(PROJECT_ROOT, 'assets'),
+
+)
+
+STATICFILES_FINDERS = (
+
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+)
 
 LOGIN_URL = '/login/'
+
+
