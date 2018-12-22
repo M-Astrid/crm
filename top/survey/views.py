@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.views.generic import ListView
+import datetime
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -183,23 +184,22 @@ def new_query(request, num):
         form = QueryForm(request.POST)
         if form.is_valid():
             query = Query(client=client, manager=manager, status=u'Запрос')
-            name = u'Заказ на ' + form.cleaned_data.get['product_type'] + u' от ' + query.added_at.strftime('%d.%m.%Y')
+            name = u'Заказ на ' + form.cleaned_data.get('product_type') + u' от ' + datetime.datetime.today().strftime("%d.%m.%Y")
             query.name = name
-            query.survey = True
             query.save()
-            qs = Item.objects.filter(product_type=form.cleaned_data.get['product_type'],
-                                     form_factor=form.cleaned_data.get['form_factor'],
-                                     type=form.cleaned_data.get['type'],
-                                     upgrade=form.cleaned_data.get['upgrade'],
+            qs = Item.objects.filter(product_type=form.cleaned_data.get('product_type'),
+                                     form_factor=form.cleaned_data.get('form_factor'),
+                                     type=form.cleaned_data.get('type'),
+                                     upgrade=form.cleaned_data.get('upgrade')
                                      )
             total, one, more = {}, {}, {}
             for obj in qs:
                 dif = []
                 k = 0
-                if obj.certificate != form.cleaned_data.get['certificate']:
+                if obj.certificate != form.cleaned_data.get('certificate'):
                     k += 1
                     dif.append('certificate')
-                if obj.price_bracket != form.cleaned_data.get['fav_brands']:
+                if obj.price_bracket != form.cleaned_data.get('fav_brands'):
                     k += 1
                     dif.append('price_bracket')
                 if obj.imp != client.imp:
@@ -218,10 +218,13 @@ def new_query(request, num):
                     one[obj.id] = dif
                 if k > 1:
                     more[obj.id] = dif
-            return render(request, 'query_result_list.html', {total: 'total',
-                                                              one: 'one',
-                                                              more: 'more',
-                                                              })
+
+                #return HttpResponse(one.get(2))
+                return render(request, 'query_result_list.html', {total: 'total',
+                                                                  one: 'one',
+                                                                  more: 'more',
+                                                                  }
+                              )
 
     else:
         form = QueryForm()

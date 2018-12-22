@@ -20,24 +20,19 @@
 {% model_field_verbose_name from client.crimea %}: {{ client.crimea }} </br>
 {% model_field_verbose_name from client.imp %}: {{ client.imp }} </br>
 </br>
-
-Дата добавления: {{ client.added_at }} </br>
-
 {% if client.basic_survey %}
 <a href="client-info-edit/">Редактировать информацию</a>
 {% endif %}
 </br>
 </br>
+</br>
 {% if changes %}
-<span style="color: #ff6600;">***В анкету были внесены изменения {{ client.changed_at }}</span></br>
 <a href="hist/">История изменений</a>
 {% endif %}
 
-
 {% endblock %}
 
-
- </br>
+</br>
 {% if not client.basic_survey %}
 <a href="client-info-form/">Начать базовый опрос</a>
 {% endif %}

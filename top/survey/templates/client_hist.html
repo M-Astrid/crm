@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>История изменений</title>
+    <title>История изменений основной информации</title>
 </head>
 <body>
 {% load get_verbose_name %}
@@ -11,11 +11,15 @@
 {% model_field_verbose_name from client.inn %}: {{ client.inn }}
 </br>
 </br>
+<span style="color: #ff6600;">***В анкету были внесены изменения {{ client.changed_at }}</span></br>
 <b>Актуальные данные:</b> </br>
 {% model_field_verbose_name from client.type %}: {{ client.type }} </br>
 {% model_field_verbose_name from client.sanctions %}:{{ client.sanctions }} </br>
 {% model_field_verbose_name from client.crimea %}: {{ client.crimea }} </br>
 {% model_field_verbose_name from client.imp %}: {{ client.imp }} </br>
+</br>
+{% model_field_verbose_name from client.added_at %}: {{ client.added_at }}
+</br>
 </br>
 
 <b>История изменений:</b></br>

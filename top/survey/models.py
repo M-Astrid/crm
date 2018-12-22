@@ -43,7 +43,7 @@ class Client(models.Model):
     crimea = models.CharField(verbose_name=u'Крым', max_length=6, blank=True, choices=DANET)
     imp = models.CharField(verbose_name=u'Импортозамещение', max_length=6, blank=True, choices=DANET)
 
-    added_at = models.DateTimeField(auto_now_add=True)
+    added_at = models.DateTimeField(verbose_name=u'Клиент добавлен', auto_now_add=True)
     changed_at = models.DateTimeField(auto_now=True)
     manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
 
@@ -106,22 +106,22 @@ class Item(models.Model):
         ('?','?'),
     )
 
-    PRICE_CATEGORIES = (
+    PRICE_CAT = (
         (u'(1)Premium', u'(1)Premium'),
         (u'(2)Средняя цен. кат.', u'(2)Средняя цен. кат.'),
         (u'(3)No name', u'(3)No name'),
     )
 
     PR_TYPES = (
-        ('server', u'Сервера'),
-        ('shd', u'СХД'),
+        (u'Сервера', u'Сервера'),
+        (u'СХД', u'СХД'),
     )
 
     CERTIFICATE = (
         (u'?', u'?'),
-        ('torp', u'ТОРП'),
-        ('st1', u'СТ1'),
-        ('eac', u'EAC'),
+        (u'ТОРП', u'ТОРП'),
+        (u'СТ1', u'СТ1'),
+        (u'EAC', u'EAC'),
     )
 
     FORM_FACT = (
@@ -168,7 +168,7 @@ class Item(models.Model):
     sanctions = models.CharField(verbose_name=u'Санкции', max_length=8, choices=DANET)
     crimea = models.CharField(verbose_name=u'Крым', max_length=8, choices=DANET)
     imp = models.CharField(verbose_name=u'Импортозамещение', max_length=6, blank=True, choices=DANET)
-    price_bracket = models.CharField(verbose_name=u'Бюджет', max_length=64, choices=PRICE_CATEGORIES)
+    price_bracket = models.CharField(verbose_name=u'Бюджет', max_length=64, choices=PRICE_CAT)
 
 
     class Meta:
@@ -189,8 +189,8 @@ class Query(models.Model):
         (u'Успешно реализован', u'Успешно реализован'),
     )
     PR_TYPES = (
-        ('server', u'Сервера'),
-        ('shd', u'СХД'),
+        (u'Сервера', u'Сервера'),
+        (u'СХД', u'СХД'),
     )
 
     FORM_FACT = (
@@ -212,21 +212,22 @@ class Query(models.Model):
     )
 
     PRICE_CAT = (
-        ('noname', u'No name'),
-        ('avrg', u'Средняя цена'),
-        ('premium', u'Premium'),
+        (u'(1)Premium', u'(1)Premium'),
+        (u'(2)Средняя цен. кат.', u'(2)Средняя цен. кат.'),
+        (u'(3)No name', u'(3)No name'),
     )
 
     CERTIFICATE = (
-        ('none', u'нет'),
-        ('torp', u'ТОРП'),
-        ('st1', u'СТ1'),
-        ('eac', u'EAC'),
+        (u'?', u'?'),
+        (u'ТОРП', u'ТОРП'),
+        (u'СТ1', u'СТ1'),
+        (u'EAC', u'EAC'),
     )
 
     DANET = (
         (u'Да', u'Да'),
         (u'Нет', u'Нет'),
+        (u'?', u'?'),
     )
 
     name = models.CharField(verbose_name=u'Название заказа', max_length=128, blank=True)
@@ -247,8 +248,8 @@ class Query(models.Model):
     survey = models.BooleanField(verbose_name=u'Опрос пройден', default=False)
 
     product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
-    form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', max_length=64, null=True, choices=FORM_FACT)
-    type = models.CharField(verbose_name=u'Тип СХД', max_length=64, null=True, choices=SHD_TYPES)
+    form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', blank=True, max_length=64, null=True, choices=FORM_FACT)
+    type = models.CharField(verbose_name=u'Тип СХД', max_length=64, blank=True, null=True, choices=SHD_TYPES)
     upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
     certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, default=u'EAC', choices=CERTIFICATE)
     fav_brands = models.CharField(verbose_name=u'Ценовая категория предпочитаемых брендов', max_length=128, choices=PRICE_CAT)
