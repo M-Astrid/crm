@@ -1,13 +1,14 @@
+from django.db.models import OuterRef, Subquery, ExpressionWrapper, Count, IntegerField
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, Http404, HttpResponse
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView, DeleteView
 import datetime
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-from .models import Client, Query, Contact, Item, ClientChange
-from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm
+from .models import Client, Query, Person, Item, ClientChange
+from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, AddContactForm
 
 
 # auth_views------------------------------------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ def login_view(request):
     return render(request, 'login.html', {'form': form,
                                           'user': request.user,
                                           'session': request.session, })
+
 
 def logout_view(request):
     logout(request)
@@ -67,13 +69,14 @@ class ClientsList(ListView):
 
     def get_queryset(self):
         queryset = Client.objects.all()
+        open_st = [u'Запрос', u'Лид', u'Заявка']
+        queryset = queryset.annotate(open_query=Count(Subquery(Query.objects.filter(client=OuterRef('pk'), status__in=open_st).values('pk'))))
+        queryset = queryset.order_by('-open_query')
         if is_manager(self.user):
             queryset = queryset.filter(manager_id=self.user)
         if self.form.cleaned_data.get('search'):
             queryset = queryset.filter(name__icontains=self.form.cleaned_data.get('search'))
         if self.form.cleaned_data.get('sort_by'):
-            queryset = queryset.order_by(self.form.cleaned_data.get('sort_by'))
-        if self.form.cleaned_data.get('filter'):
             queryset = queryset.order_by(self.form.cleaned_data.get('sort_by'))
         return queryset
 
@@ -83,11 +86,72 @@ class ClientsList(ListView):
         return context
 
 
-def client(request, num):
+class AddClient(CreateView):
+
+    form_class = AddClientForm
+    model = Client
+    template_name = 'client_add.html'
+
+    def form_valid(self, form):
+        if is_manager(self.request.user):
+            form.instance.manager = self.request.user
+        return super(AddClient, self).form_valid(form)
+
+
+def add_client(request):
+    if request.method == 'POST':
+        client_form = AddClientForm(request.POST)
+        contact_form = AddContactForm(request.POST)
+        if client_form.is_valid() and contact_form.is_valid():
+            client = client_form.save()
+            client.manager = request.user
+            client.save()
+            contact = contact_form.save()
+            contact.client = client
+            return HttpResponseRedirect('/clients/'+str(client.pk)+'/')
+    else:
+        client_form = AddClientForm()
+        contact_form = AddContactForm()
+        return render(request, 'client_add.html', {'form1': client_form,
+                                                   'form2': contact_form
+                                                   })
+
+
+class ClientDelete(DeleteView):
+
+    model = Client
+    success_url = '/clients/'
+
+
+class AddContact(CreateView):
+
+    form_class = AddContactForm
+    model = Person
+    template_name = 'client_add_contact.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.client = get_object_or_404(Client, pk=self.kwargs['num'])
+        return super(AddContact, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        contact = form.save()
+        contact.client = self.client
+        return super(AddContact, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(AddContact, self).get_context_data(**kwargs)
+        context['client'] = self.client
+        return context
+
+
+def client_detail(request, num):
     c = get_object_or_404(Client, id=num)
     changes = ClientChange.objects.filter(client=c)
+    contact = Person.objects.filter(client=c)
     return render(request, 'client_detail.html', {'client': c,
-                                                  'changes': changes})
+                                                  'changes': changes,
+                                                  'contacts': contact,
+                                                  })
 
 
 def client_hist(request, num, ch=None):
@@ -95,7 +159,7 @@ def client_hist(request, num, ch=None):
     template_name = 'client_hist.html'
 
     c = get_object_or_404(Client, id=num)
-    changes = ClientChange.objects.all()
+    changes = ClientChange.objects.filter(client=c)
     old = ch
     if old is not None:
         old = get_object_or_404(ClientChange, id=ch)
@@ -154,7 +218,6 @@ def client_info_edit(request, num):
                                                      'session': request.session, })
 
 
-
 class QueryList(ListView):
 
     template_name = 'queries.html'
@@ -163,73 +226,88 @@ class QueryList(ListView):
     def dispatch(self, request, *args, **kwargs):
         self.form = QuerySortingForm(request.GET)
         self.form.is_valid()
+        self.user = request.user
+        return super(QueryList, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = Query.objects.all()
         if self.form.cleaned_data.get('search'):
-            queryset = queryset.filter(name__contains=self.form.cleaned_data.get('search'))
+            queryset = queryset.filter(name__icontains=self.form.cleaned_data.get('search'))
         if self.form.cleaned_data.get('sort_by'):
             queryset = queryset.order_by(self.form.cleaned_data.get('sort_by'))
         if self.form.cleaned_data.get('only_open'):
-            queryset = queryset.filter(status_in=['query', 'lead', 'order'])
-            return queryset
+            queryset = queryset.filter(status__in=['query', 'lead', 'order'])
+        return queryset
 
-    #def get_context_data(self, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(QueryList, self).get_context_data(**kwargs)
+        context['form'] = self.form
+        return context
 
 
 def new_query(request, num):
     if request.method == "POST":
         client = Client.objects.get(pk=num)
         manager = request.user
-        form = QueryForm(request.POST)
+        query = Query(client=client, manager=manager, status=u'Запрос')
+        form = QueryForm(request.POST, instance=query)
         if form.is_valid():
-            query = Query(client=client, manager=manager, status=u'Запрос')
             name = u'Заказ на ' + form.cleaned_data.get('product_type') + u' от ' + datetime.datetime.today().strftime("%d.%m.%Y")
             query.name = name
-            query.save()
-            qs = Item.objects.filter(product_type=form.cleaned_data.get('product_type'),
-                                     form_factor=form.cleaned_data.get('form_factor'),
-                                     type=form.cleaned_data.get('type'),
-                                     upgrade=form.cleaned_data.get('upgrade')
-                                     )
-            total, one, more = {}, {}, {}
-            for obj in qs:
-                dif = []
-                k = 0
-                if obj.certificate != form.cleaned_data.get('certificate'):
-                    k += 1
-                    dif.append('certificate')
-                if obj.price_bracket != form.cleaned_data.get('fav_brands'):
-                    k += 1
-                    dif.append('price_bracket')
-                if obj.imp != client.imp:
-                    k += 1
-                    dif.append('imp')
-                if obj.sanctions != client.sanctions:
-                    k += 1
-                    dif.append('sanctions')
-                if obj.crimea != client.crimea:
-                    k += 1
-                    dif.append('crimea')
-
-                if k == 0:
-                    total[obj.id] = dif
-                if k == 1:
-                    one[obj.id] = dif
-                if k > 1:
-                    more[obj.id] = dif
-
-                #return HttpResponse(one.get(2))
-                return render(request, 'query_result_list.html', {total: 'total',
-                                                                  one: 'one',
-                                                                  more: 'more',
-                                                                  }
-                              )
-
+            query.survey = True
+            form.save()
+            url = str(query.pk) + '/'
+            return HttpResponseRedirect(url)
     else:
         form = QueryForm()
         return render(request, 'query_form.html', {'form': form})
 
 
-def parser(request):
-    it = ['upgrade', 'certificate', 'fav_brands', 'sanctions', 'crimea', 'imp']
+def item_list(request, num, qnum):
+    query = Query.objects.get(pk=qnum)
+    client = Client.objects.get(pk=num)
+    qs = Item.objects.filter(product_type=query.product_type,
+                             form_factor=query.form_factor,
+                             type=query.type,
+                             upgrade=query.upgrade
+                             )
+    total, one, more = {}, {}, {}
+    for obj in qs:
+        dif = []
+        k = 0
+        if obj.certificate != query.certificate:
+            k += 1
+            dif.append(u'Сертификация')
+        if obj.price_bracket != query.fav_brands:
+            k += 1
+            dif.append(u'Ценовая категория')
+        if obj.imp != client.imp:
+            k += 1
+            dif.append(u'Импортозамещение')
+        if obj.sanctions != client.sanctions:
+            k += 1
+            dif.append(u'Санкции')
+        if obj.crimea != client.crimea:
+            k += 1
+            dif.append(u'Крым')
+
+        if k == 0:
+            total[obj.id] = str(dif)
+        if k == 1:
+            one[obj.id] = str(dif)
+        if k > 1:
+            more[obj.id] = str(dif)
+
+    tot = qs.filter(id__in=total.keys())
+    on = qs.filter(id__in=one.keys())
+    mor = qs.filter(id__in=more.keys())
+
+    return HttpResponse(on)
+    return render(request, 'query_result_list.html', {'total': tot,
+                                                      'one': on,
+                                                      'more': mor,
+                                                      'query': query,
+                                                      'client': client,
+                                                      }
+                  )
+

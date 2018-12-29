@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, Group, Permission
+#from django.urls import reverse
+from django.urls import reverse
 
 
 class Client(models.Model):
@@ -45,7 +47,8 @@ class Client(models.Model):
 
     added_at = models.DateTimeField(verbose_name=u'Клиент добавлен', auto_now_add=True)
     changed_at = models.DateTimeField(auto_now=True)
-    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    #query = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = u'Клиент'
@@ -57,6 +60,49 @@ class Client(models.Model):
         for i in ['id', 'form', 'name', 'inn', 'basic_survey', 'manager', 'changed_at', 'added_at']:
             fields.remove(i)
         return fields
+
+    def get_absolute_url(self):
+        return "/clients/%i/add-contact/" % self.pk
+
+
+class Contact(models.Model):
+
+    objects = models.Manager()
+
+    first_name = models.CharField(verbose_name=u'Имя', max_length=64)
+    father_name = models.CharField(verbose_name=u'Отчество', max_length=64)
+    last_name = models.CharField(verbose_name=u'Фамилия', max_length=64)
+    phone_number = models.CharField(verbose_name=u'Телефон', max_length=14, blank=True)
+    phone_number2 = models.CharField(verbose_name=u'Доп. телефон', max_length=14, blank=True)
+    email = models.EmailField(verbose_name=u'E-mail', blank=True)
+    position = models.CharField(verbose_name=u'Должность', max_length=128)
+
+    class Meta:
+        verbose_name = u'Контактное лицо'
+        verbose_name_plural = u'Контактые лица'
+        ordering = ['last_name']
+
+
+class Person(models.Model):
+
+    objects = models.Manager()
+
+    first_name = models.CharField(verbose_name=u'Имя', max_length=64)
+    father_name = models.CharField(verbose_name=u'Отчество', max_length=64)
+    last_name = models.CharField(verbose_name=u'Фамилия', max_length=64)
+    phone_number = models.CharField(verbose_name=u'Телефон', max_length=14, blank=True)
+    phone_number2 = models.CharField(verbose_name=u'Доп. телефон', max_length=14, blank=True)
+    email = models.EmailField(verbose_name=u'E-mail', blank=True)
+    position = models.CharField(verbose_name=u'Должность', max_length=128)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = u'Контакт'
+        verbose_name_plural = u'Контакты'
+        ordering = ['pk']
+
+    def get_absolute_url(self):
+        return "/clients/%i/" % self.client.pk
 
 
 class ClientChange(models.Model):
@@ -75,25 +121,6 @@ class ClientChange(models.Model):
 
     class Meta:
         ordering = ['-id']
-
-
-class Contact(models.Model):
-
-    objects = models.Manager()
-
-    first_name = models.CharField(verbose_name=u'Имя', max_length=64)
-    father_name = models.CharField(verbose_name=u'Отчество', max_length=64)
-    last_name = models.CharField(verbose_name=u'Фамилия', max_length=64)
-    phone_number = models.CharField(verbose_name=u'Телефон', max_length=14, blank=True)
-    phone_number2 = models.CharField(verbose_name=u'Доп. телефон', max_length=14, blank=True)
-    email = models.EmailField(verbose_name=u'E-mail', blank=True)
-    position = models.CharField(verbose_name=u'Должность', max_length=128)
-    client_id = models.ForeignKey(Client, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = u'Контактное лицо'
-        verbose_name_plural = u'Контактые лица'
-        ordering = ['last_name']
 
 
 class Item(models.Model):
@@ -231,8 +258,8 @@ class Query(models.Model):
     )
 
     name = models.CharField(verbose_name=u'Название заказа', max_length=128, blank=True)
-    client = models.ForeignKey(Client, on_delete=models.DO_NOTHING)
-    manager = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
+    client = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL, related_name='queries')
+    manager = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     status = models.CharField(verbose_name=u'Статус', max_length=64, choices=STATUSES)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -260,3 +287,38 @@ class Query(models.Model):
         verbose_name = u'Заявка'
         verbose_name_plural = u'Заявки'
         ordering = ['-added_at']
+
+
+class Block(models.Model):
+
+    server = models.TextField(verbose_name=u'Сервера', blank=True)
+    shd = models.TextField(verbose_name=u'СХД', blank=True)
+    server_rack = models.TextField(verbose_name=u'Сервер в форм факторе Rack', blank=True)
+    server_tower = models.TextField(verbose_name=u'Сервер в форм факторе Tower', blank=True)
+    blade_server = models.TextField(verbose_name=u'Блейд-сервер', blank=True)
+    conv_inf = models.TextField(verbose_name=u'Конвергентная инфраструктура', blank=True)
+    shd_high = models.TextField(verbose_name=u'СХД высокопроизводительного класса', blank=True)
+    shd_common = models.TextField(verbose_name=u'СХД общего назначения', blank=True)
+    shd_begin = models.TextField(verbose_name=u'СХД начального уровня', blank=True)
+    shd_nas = models.TextField(verbose_name=u'СХД система NAS', blank=True)
+    shd_hybrid = models.TextField(verbose_name=u'Гибридная СХД', blank=True)
+    shd_reserv = models.TextField(verbose_name=u'СХД для резервного копирования', blank=True)
+    shd_vmware = models.TextField(verbose_name=u'СХД для расширения VMware', blank=True)
+    shd_video = models.TextField(verbose_name=u'СХД для видеоконтента', blank=True)
+    shd_program = models.TextField(verbose_name=u'Программно-определяемая СХД', blank=True)
+    new = models.TextField(verbose_name=u'Покупка новых готовых систем', blank=True)
+    upgrade = models.TextField(verbose_name=u'Upgrade', blank=True)
+    early_dell = models.TextField(verbose_name=u'Ранее закупали Dell', blank=True)
+    early_emc = models.TextField(verbose_name=u'Ранее закупали EMC', blank=True)
+    early_huawei = models.TextField(verbose_name=u'Ранее закупали Huawei', blank=True)
+    early_sugon = models.TextField(verbose_name=u'Ранее закупали SUGON', blank=True)
+    dell = models.TextField(verbose_name=u'Заказывают Dell', blank=True)
+    emc = models.TextField(verbose_name=u'Заказывают EMC', blank=True)
+    huawei = models.TextField(verbose_name=u'Заказывают Huawei', blank=True)
+    sugon = models.TextField(verbose_name=u'Заказывают SUGON', blank=True)
+    ending = models.TextField(verbose_name=u'Завершающий блок', blank=True)
+
+    class Meta:
+        verbose_name = u'Текстовые блоки'
+        verbose_name_plural = u'Текстовые блоки'
+

@@ -20,27 +20,43 @@
 {% model_field_verbose_name from client.crimea %}: {{ client.crimea }} </br>
 {% model_field_verbose_name from client.imp %}: {{ client.imp }} </br>
 </br>
+
 {% if client.basic_survey %}
 <a href="client-info-edit/">Редактировать информацию</a>
 {% endif %}
 </br>
 </br>
+Контактные лица:</br>
+{% for contact in contacts %}
+    {{ contact.last_name }}
+    {{ contact.first_name }}
+    {{ contact.father_name }}
+    Тел.: {{ contact.phone_number }}
+    {% if contact.phone_number2 %}
+        Тел. 2:{{ contact.phone_number2 }}
+    {% endif %}
+    E-mail: {{ contact.email }}
+    {{ contact.position }}</br>
+{% endfor %}</br>
+<a href="add-contact/">Добавить контактное лицо</a>
+</br>
 </br>
 {% if changes %}
-<a href="hist/">История изменений</a>
+    <a href="hist/">История изменений</a>
 {% endif %}
-
 {% endblock %}
 
-</br>
 {% if not client.basic_survey %}
-<a href="client-info-form/">Начать базовый опрос</a>
+    <a href="client-info-form/">Начать базовый опрос</a>
 {% endif %}
 </br>
 </br>
 {% if client.basic_survey %}
-<a href="new-query/">Новый запрос</a>
+    <a href="new-query/">Новый запрос</a>
 {% endif %}
+</br>
+</br>
+<a href="delete/">Удалить клиента</a>
 </br>
 </br>
 <a href="/clients/">К списку клиентов</a></br>

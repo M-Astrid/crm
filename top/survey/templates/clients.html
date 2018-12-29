@@ -7,6 +7,7 @@
 <body>
 User: {{ request.user }}
 <a href="/add-client/">Добавить клиента</a>
+<a href="/main/">На главную</a>
 <form>
     <fieldset>
     {{form}}
@@ -14,15 +15,15 @@ User: {{ request.user }}
     </fieldset>
 </form>
 {% for client in object_list %}
-    Организация: {{ client.form }}"{{ client.name }}"</br>
-    Пройден базовый опрос: {{ client.basic_survey }}</br>
+<b>Организация:</b> {{ client.form }}"{{ client.name }}"</br>
+    {% if not client.basic_survey %}
+     <span style="color: #ff6600;"><p>*** Не пройден базовый опрос!</p></span>
+    {% endif %}
     Тип организации: {{ client.type }} </br>
     Санкции: {{ client.sanctions }}</br>
-    <a href="{{ client.id }}">Подробнее</a></br>
+    Количество открытых заказов: {{ client.open_query }}</br>
+    <a href="{{ client.id }}">Подробнее</a></br></br>
 </br>
 {% endfor %}
-</br>
-</br>
-<a href="/main/">На главную</a>
 </body>
 </html>
