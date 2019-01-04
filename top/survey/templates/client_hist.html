@@ -26,8 +26,11 @@
 
 {% for change in changes %}
 
-{{ change.changed_at }} {{ change.change }} кем: {{ change.manager }}</br>
-<a href="{{ change.id }}">Старая версия</a></br>
+<b> Дата:</b> {{ change.changed_at }} <b>Категория: </b>{{ change.ch_type }}</br>
+*Текст при наведении мышкой: {{ change.change }} кем: {{ change.manager }}</br>
+
+<a href="{{ change.id }}">Старая версия</a> *? Сделать отображение старой версии по наведению мышки вместо ссылки?*  </br>
+
 </br>
 {% endfor %}
 </body>

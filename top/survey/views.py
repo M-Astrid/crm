@@ -1,13 +1,14 @@
 from django.db.models import OuterRef, Subquery, ExpressionWrapper, Count, IntegerField
+from django.forms import model_to_dict
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, Http404, HttpResponse
-from django.views.generic import ListView, CreateView, DeleteView
+from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 import datetime
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-from .models import Client, Query, Person, Item, ClientChange
+from .models import Client, Query, Person, Item, ClientChange, PersonChange
 from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, AddContactForm
 
 
@@ -98,23 +99,37 @@ class AddClient(CreateView):
         return super(AddClient, self).form_valid(form)
 
 
-def add_client(request):
-    if request.method == 'POST':
-        client_form = AddClientForm(request.POST)
-        contact_form = AddContactForm(request.POST)
-        if client_form.is_valid() and contact_form.is_valid():
-            client = client_form.save()
-            client.manager = request.user
-            client.save()
-            contact = contact_form.save()
-            contact.client = client
-            return HttpResponseRedirect('/clients/'+str(client.pk)+'/')
+def client_info_edit(request, num):
+
+    c = Client.objects.get(pk=num)
+    dict = model_to_dict(c)
+    fields = ['type', 'sanctions', 'crimea', 'imp']
+    old = {}
+    for i in fields:
+        old[i] = dict.get(i)
+
+    if request.method == "POST":
+        form = ClientInfoForm(request.POST, instance=c)
+        if form.is_valid():
+            msg = ''
+            for i in fields:
+                if old.get(i) != form.cleaned_data.get(i):
+                    msg += 'Изменено поле "' + c._meta.get_field(i).verbose_name + '":' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
+            if msg != '':
+                change = ClientChange(type=old.get('type'), sanctions=old.get('sanctions'), crimea=old.get('crimea'), imp=old.get('imp'))
+                change.change = msg
+                change.ch_type = 'Базовый опрос'
+                change.manager = request.user
+                change.client = c
+                change.save()
+                form.save()
+            #return HttpResponse(ol.get('type'))
+            return HttpResponseRedirect('/clients/'+num+'/')
     else:
-        client_form = AddClientForm()
-        contact_form = AddContactForm()
-        return render(request, 'client_add.html', {'form1': client_form,
-                                                   'form2': contact_form
-                                                   })
+        form = ClientInfoForm(initial=old)
+    return render(request, 'client_info_form.html', {'form': form,
+                                                     'user': request.user,
+                                                     'session': request.session, })
 
 
 class ClientDelete(DeleteView):
@@ -134,14 +149,93 @@ class AddContact(CreateView):
         return super(AddContact, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        contact = form.save()
+        contact = form.save(commit=False)
         contact.client = self.client
-        return super(AddContact, self).form_valid(form)
+        if form.is_valid():
+            msg = 'Добавлено контактное лицо ' + form.cleaned_data.get('last_name') + ' ' + form.cleaned_data.get('first_name')
+            change = ClientChange()
+            change.ch_type = 'Контактные лица'
+            change.change = msg
+            change.manager = self.request.user
+            change.client = self.client
+            change.save()
+            form.save()
+            return HttpResponseRedirect("/clients/%i/" % self.client.pk)
 
     def get_context_data(self, **kwargs):
         context = super(AddContact, self).get_context_data(**kwargs)
         context['client'] = self.client
         return context
+
+
+class EditContact(UpdateView):
+
+    model = Person
+    template_name = 'client_add_contact.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = get_object_or_404(Person, pk=self.kwargs['pk'])
+        self.client = get_object_or_404(Client, pk=self.kwargs['num'])
+        dict = model_to_dict(self.person)
+        self.fields = ['last_name', 'first_name', 'father_name', 'phone_number', 'phone_number2', 'email', 'position']
+        self.old = {}
+        for i in self.fields:
+            self.old[i] = dict.get(i)
+        return super(EditContact, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            msg = 'У контактного лица ' + self.person.last_name + ' ' + self.person.first_name + ' '
+            for i in self.fields:
+                if self.old.get(i) != form.cleaned_data.get(i):
+                    msg += self.person._meta.get_field(i).verbose_name + '":' + self.old.get(
+                        i) + ' => ' + form.cleaned_data.get(i) + ';\n'
+            if msg != '':
+                change = ClientChange(last_name=self.old.get('last_name'), first_name=self.old.get('first_name'),
+                                      father_name=self.old.get('father_name'), phone_number=self.old.get('phone_number'),
+                                      phone_number2=self.old.get('phone_number2'), email=self.old.get('email'),
+                                      position=self.old.get('position'))
+                change.change = msg
+                change.ch_type = 'Контактные лица'
+                change.manager = self.request.user
+                change.client = self.client
+                change.save()
+                form.save()
+                return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(EditContact, self).get_context_data(**kwargs)
+        context['client'] = self.client
+        return context
+
+
+class DeleteContact(DeleteView):
+
+    model = Person
+
+    def dispatch(self, request, *args, **kwargs):
+        self.client = get_object_or_404(Client, pk=self.kwargs['num'])
+        return super(DeleteContact, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(DeleteContact, self).get_context_data(**kwargs)
+        context['client'] = self.client
+        person = get_object_or_404(Person, pk=self.kwargs['pk'])
+        msg = 'Удалено контактное лицо ' + person.last_name + ' ' + person.first_name
+        change = ClientChange(last_name=person.last_name, first_name=person.first_name,
+                              father_name=person.father_name, phone_number=person.phone_number,
+                              phone_number2=person.phone_number2, email=person.email,
+                              position=person.position)
+        change.change = msg
+        change.ch_type = 'Контактные лица'
+        change.manager = self.request.user
+        change.client = self.client
+        change.save()
+        return context
+
+    def get_success_url(self):
+        url = "/clients/%i/" % self.client.pk
+        return url
 
 
 def client_detail(request, num):
@@ -181,38 +275,6 @@ def client_info_form_view(request, num):
             return HttpResponseRedirect('/clients/'+num+'/')
     else:
         form = ClientInfoForm()
-    return render(request, 'client_info_form.html', {'form': form,
-                                                     'user': request.user,
-                                                     'session': request.session, })
-
-
-def client_info_edit(request, num):
-    c = Client.objects.get(pk=num)
-    old = {'type': c.type,
-           'sanctions': c.sanctions,
-           'crimea': c.crimea,
-           'imp': c.imp}
-    if request.method == "POST":
-        form = ClientInfoForm(request.POST, instance=c)
-        if form.is_valid():
-            fields = ['type', 'sanctions', 'crimea', 'imp']
-            msg = ''
-            for i in fields:
-                if old.get(i) != form.cleaned_data.get(i):
-                    msg += 'Изменено поле "' + c._meta.get_field(i).verbose_name + '":' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
-            if msg != '':
-                change = ClientChange(type=old.get('type'), sanctions=old.get('sanctions'), crimea=old.get('crimea'), imp=old.get('imp'))
-                change.change = msg
-                change.manager = request.user
-                change.client = c
-                change.save()
-                form.save()
-            return HttpResponseRedirect('/clients/'+num+'/')
-    else:
-        form = ClientInfoForm(initial={'type': c.type,
-                                       'sanctions': c.sanctions,
-                                       'crimea': c.crimea,
-                                       'imp': c.imp})
     return render(request, 'client_info_form.html', {'form': form,
                                                      'user': request.user,
                                                      'session': request.session, })
@@ -302,7 +364,7 @@ def item_list(request, num, qnum):
     on = qs.filter(id__in=one.keys())
     mor = qs.filter(id__in=more.keys())
 
-    return HttpResponse(on)
+    #return HttpResponse(on)
     return render(request, 'query_result_list.html', {'total': tot,
                                                       'one': on,
                                                       'more': mor,

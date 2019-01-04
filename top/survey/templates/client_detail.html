@@ -36,7 +36,7 @@
         Тел. 2:{{ contact.phone_number2 }}
     {% endif %}
     E-mail: {{ contact.email }}
-    {{ contact.position }}</br>
+    {{ contact.position }} <a href="{{ contact.pk }}/">Редактировать</a><a href="{{ contact.pk }}/delete/">Удалить</a> </br>
 {% endfor %}</br>
 <a href="add-contact/">Добавить контактное лицо</a>
 </br>

@@ -18,10 +18,23 @@
 
 {% block old_info %}
 
-{% model_field_verbose_name from old.type %}: {{ old.type }} </br>
-{% model_field_verbose_name from old.sanctions %}:{{ old.sanctions }} </br>
-{% model_field_verbose_name from old.crimea %}: {{ old.crimea }} </br>
-{% model_field_verbose_name from old.imp %}: {{ old.imp }} </br>
+
+{% if old.ch_type == 'Базовый опрос' %}
+    {% model_field_verbose_name from old.type %}: {{ old.type }} </br>
+    {% model_field_verbose_name from old.sanctions %}:{{ old.sanctions }} </br>
+    {% model_field_verbose_name from old.crimea %}: {{ old.crimea }} </br>
+    {% model_field_verbose_name from old.imp %}: {{ old.imp }} </br>
+{% endif %}
+
+{% if old.ch_type == 'Контактные лица' %}
+    {% model_field_verbose_name from old.last_name %}: {{ old.last_name }} </br>
+    {% model_field_verbose_name from old.first_name %}:{{ old.first_name }} </br>
+    {% model_field_verbose_name from old.father_name %}: {{ old.father_name }} </br>
+    {% model_field_verbose_name from old.phone_number %}: {{ old.phone_number }} </br>
+    {% model_field_verbose_name from old.phone_number2 %}: {{ old.phone_number2 }} </br>
+    {% model_field_verbose_name from old.email %}: {{ old.email }} </br>
+    {% model_field_verbose_name from old.position %}: {{ old.position }} </br>
+{% endif %}
 
 {% endblock %}
 

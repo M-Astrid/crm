@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User, Group, Permission
-#from django.urls import reverse
-from django.urls import reverse
 
 
 class Client(models.Model):
@@ -65,7 +63,8 @@ class Client(models.Model):
         return "/clients/%i/add-contact/" % self.pk
 
 
-class Contact(models.Model):
+# DELETE!
+class Contact(models.Model):                      # DELETE!
 
     objects = models.Manager()
 
@@ -105,7 +104,8 @@ class Person(models.Model):
         return "/clients/%i/" % self.client.pk
 
 
-class ClientChange(models.Model):
+# DELETE!
+class PersonChange(models.Model):
 
     objects = models.Manager()
 
@@ -114,10 +114,29 @@ class ClientChange(models.Model):
     changed_at = models.DateTimeField(auto_now_add=True)
     change = models.TextField(blank=True)
 
+
+class ClientChange(models.Model):
+
+    objects = models.Manager()
+
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    ch_type = models.CharField(max_length=64)
+    change = models.TextField(blank=True)
+
     type = models.CharField(verbose_name=u'Тип организации(old)', max_length=64, blank=True)
     sanctions = models.CharField(verbose_name=u'Санкции(old)', max_length=6, blank=True)
     crimea = models.CharField(verbose_name=u'Крым(old)', max_length=6, blank=True)
     imp = models.CharField(verbose_name=u'Импортозамещение(old)', max_length=6, blank=True)
+
+    first_name = models.CharField(verbose_name=u'Имя', max_length=64, blank=True)
+    father_name = models.CharField(verbose_name=u'Отчество', max_length=64, blank=True)
+    last_name = models.CharField(verbose_name=u'Фамилия', max_length=64, blank=True)
+    phone_number = models.CharField(verbose_name=u'Телефон', max_length=14, blank=True)
+    phone_number2 = models.CharField(verbose_name=u'Доп. телефон', max_length=14, blank=True)
+    email = models.EmailField(verbose_name=u'E-mail', blank=True)
+    position = models.CharField(verbose_name=u'Должность', max_length=128, blank=True)
 
     class Meta:
         ordering = ['-id']

@@ -15,6 +15,8 @@ urlpatterns = [
     url(r'^clients/(?P<num>[0-9]+)/$', login_required(views.client_detail), name='client_detail'),
     url(r'^clients/(?P<pk>[0-9]+)/delete/$', login_required(views.ClientDelete.as_view()), name='client-delete'),
     url(r'^clients/(?P<num>[0-9]+)/add-contact/$', login_required(views.AddContact.as_view())),
+    url(r'^clients/(?P<num>[0-9]+)/(?P<pk>[0-9]+)/$', login_required(views.EditContact.as_view())),
+    url(r'^clients/(?P<num>[0-9]+)/(?P<pk>[0-9]+)/delete/$', login_required(views.DeleteContact.as_view())),
     url(r'^clients/(?P<num>[0-9]+)/new-query/$', login_required(views.new_query), name='new-query'),
     url(r'^clients/(?P<num>[0-9]+)/new-query/(?P<qnum>[0-9]+)/$', login_required(views.item_list), name='item-list'),
     url(r'^clients/(?P<num>[0-9]+)/hist_info/$', login_required(views.client_hist)),

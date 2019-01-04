@@ -7,7 +7,7 @@
 <body>
 <form action="" method="post">
     {% csrf_token %}
-    <p>Вы действительно хотите удалить {{ object.form }} "{{ object.name }}" из списка клиентов?</p>
+    <p>Вы действительно хотите удалить контактное лицо {{ object.last_name }} {{ object.first_name }} из списка контактов?</p>
     <input type="submit" value="Confirm" />
 </form>
 </body>
