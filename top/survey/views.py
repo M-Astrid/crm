@@ -199,7 +199,7 @@ def client_info_edit(request, num):
             msg = ''
             for i in fields:
                 if old.get(i) != form.cleaned_data.get(i):
-                    msg += 'Изменено поле "' + i + '":' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
+                    msg += 'Изменено поле "' + c._meta.get_field(i).verbose_name + '":' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
             if msg != '':
                 change = ClientChange(type=old.get('type'), sanctions=old.get('sanctions'), crimea=old.get('crimea'), imp=old.get('imp'))
                 change.change = msg
