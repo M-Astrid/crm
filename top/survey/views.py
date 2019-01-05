@@ -1,15 +1,15 @@
-from django.db.models import OuterRef, Subquery, ExpressionWrapper, Count, IntegerField
+from django.db.models import OuterRef, Subquery, Count, F, CharField, ExpressionWrapper, Value, IntegerField
 from django.forms import model_to_dict
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 import datetime
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
+
 
 from .models import Client, Query, Person, Item, ClientChange, PersonChange
-from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, AddContactForm
+from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, \
+    AddContactForm, DeclineForm
 
 
 # auth_views------------------------------------------------------------------------------------------------------------
@@ -71,7 +71,12 @@ class ClientsList(ListView):
     def get_queryset(self):
         queryset = Client.objects.all()
         open_st = [u'Запрос', u'Лид', u'Заявка']
-        queryset = queryset.annotate(open_query=Count(Subquery(Query.objects.filter(client=OuterRef('pk'), status__in=open_st).values('pk'))))
+
+        queries = Query.objects.filter(client=OuterRef('pk'), status__in=open_st).order_by().values('client')
+        count_queries = queries.annotate(c=Count('pk', output_field=IntegerField())).values('c')
+        open_query = Subquery(count_queries, output_field=IntegerField())
+        queryset = queryset.annotate(open_query=open_query)
+
         queryset = queryset.order_by('-open_query')
         if is_manager(self.user):
             queryset = queryset.filter(manager_id=self.user)
@@ -322,10 +327,16 @@ def new_query(request, num):
             return HttpResponseRedirect(url)
     else:
         form = QueryForm()
-        return render(request, 'query_form.html', {'form': form})
+        return render(request, 'form.html', {'form': form,
+                                             'title': u'Новый запрос',
+                                             'button': u'Подобрать товары',
+                                             })
 
 
 def item_list(request, num, qnum):
+    if request.method == "POST":
+        checks = request.POST.getlist('checks')
+        qs = Item.objects.filter(id__in=checks)
     query = Query.objects.get(pk=qnum)
     client = Client.objects.get(pk=num)
     qs = Item.objects.filter(product_type=query.product_type,
@@ -333,43 +344,67 @@ def item_list(request, num, qnum):
                              type=query.type,
                              upgrade=query.upgrade
                              )
-    total, one, more = {}, {}, {}
+    total, one, more, dif1, dif2 = [], [], [], [], []
     for obj in qs:
-        dif = []
+        dif = ''
         k = 0
         if obj.certificate != query.certificate:
             k += 1
-            dif.append(u'Сертификация')
+            dif += 'Сертификация '
         if obj.price_bracket != query.fav_brands:
             k += 1
-            dif.append(u'Ценовая категория')
+            dif += 'Ценовая категория '
         if obj.imp != client.imp:
             k += 1
-            dif.append(u'Импортозамещение')
+            dif += 'Импортозамещение '
         if obj.sanctions != client.sanctions:
             k += 1
-            dif.append(u'Санкции')
+            dif += 'Санкции '
         if obj.crimea != client.crimea:
             k += 1
-            dif.append(u'Крым')
+            dif += 'Крым '
 
         if k == 0:
-            total[obj.id] = str(dif)
+            total += [obj.id]
         if k == 1:
-            one[obj.id] = str(dif)
+            one += [obj.id]
+            dif1 += [dif]
         if k > 1:
-            more[obj.id] = str(dif)
+            more += [obj.id]
+            dif2 += [dif]
 
-    tot = qs.filter(id__in=total.keys())
-    on = qs.filter(id__in=one.keys())
-    mor = qs.filter(id__in=more.keys())
+    tot = qs.filter(id__in=total)
+    on = qs.filter(id__in=one)
+    mor = qs.filter(id__in=more)
 
-    #return HttpResponse(on)
     return render(request, 'query_result_list.html', {'total': tot,
                                                       'one': on,
                                                       'more': mor,
                                                       'query': query,
                                                       'client': client,
+                                                      'dif1': dif1,
+                                                      'dif2': dif2,
                                                       }
                   )
 
+
+def decline_order(request, pk):
+    query = Query.objects.get(pk=pk)
+    client = query.client
+    if request.method == "POST":
+        form = DeclineForm(request.POST)
+        if form.is_valid():
+            query.decline_reason = form.cleaned_data.get('decline_reason')
+            query.status = u'Отказ'
+            query.save()
+            url = '/clients/%i/' % client.pk
+            return HttpResponseRedirect(url)
+    else:
+        form = DeclineForm()
+        return render(request, 'form.html', {
+                                             'title': u'Отмена заказа',
+                                             'button': u'Отменить заказ',
+                                             'form': form,
+                                             'user': request.user,
+                                             'query': query,
+                                             })

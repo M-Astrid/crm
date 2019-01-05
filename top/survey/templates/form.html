@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Добавить</title>
+    <title>{{ title }}</title>
 </head>
 <body>
 {% block survey %}
@@ -10,7 +10,7 @@
 <form method="POST" action="">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Сохранить результаты</button>
+    <button type="submit">{{ button }}</button>
 </form>
 
 {% endblock %}

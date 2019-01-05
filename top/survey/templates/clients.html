@@ -20,8 +20,9 @@ User: {{ request.user }}
      <span style="color: #ff6600;"><p>*** Не пройден базовый опрос!</p></span>
     {% endif %}
     Тип организации: {{ client.type }} </br>
-    Количество открытых заказов: {{ client.open_query }}</br>
-    <a href="{{ client.id }}">Подробнее</a></br></br>
+    Количество открытых заказов: {% if client.open_query is not None %} {{ client.open_query }} {% endif %}
+    {% if client.open_query is None %} 0 {% endif %}</br>
+    <a href="{{ client.id }}/">Подробнее</a></br></br>
 </br>
 {% endfor %}
 </body>

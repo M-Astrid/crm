@@ -14,31 +14,46 @@
 {% model_field_verbose_name from client.sanctions %}: {{ client.sanctions }}
 {% model_field_verbose_name from client.crimea %}: {{ client.crimea }}
 </br></br>
+{% if total or one or more %}
 
-
-<b>Полное совпадение:</b></br>
-{% for obj in total %}
-{{ obj.group }}
-{{ obj.vendor1 }}
-{{ obj.model }}
-{{ obj.SKU }} <input type="checkbox"></br>
-{% endfor %}</br>
-</br>
-<b>Одно несовпадение:</b></br>
-{% for obj in one %}
-{{ obj.group }}
-{{ obj.vendor1 }}
-{{ obj.SKU }}
-<input type="checkbox"></br>
-{% endfor %}</br>
-</br>
-<b>Более одного:</b></br>
-{% for obj in more %}
-{{ obj.group }}
-{{ obj.vendor1 }}
-{{ obj.model }}
-{{ obj.SKU }} <input type="checkbox"></br>
-{% endfor %}</br>
-</br>
+<form method="post">
+    <button type="submit">Подтвердить выбор товаров</button> <a href="/queries/{{ query.pk }}/decline/">ОТКАЗ</a>
+    </br>
+    </br>
+    <b>Полное совпадение:</b></br>
+    {% for obj in total %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.model }}
+        {{ obj.SKU }} <input type="checkbox" name="checks[]" value="obj.pk" /></br>
+    {% endfor %}</br>
+    </br>
+    <b>Одно несовпадение:</b></br>
+    {% for obj in one %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.SKU }} {{ obj.dif }}<input type="checkbox" name="checks[]" value="obj.pk" /></br>
+    {% endfor %}</br>
+    {% for i in dif1 %}
+        {{ i }}</br>
+    {% endfor %}
+    </br>
+    <b>Более одного:</b></br>
+    {% for obj in more %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.model }}
+        {{ obj.SKU }} <input type="checkbox" name="checks[]" value="obj.pk" /></br>
+    {% endfor %}
+    {% for i in dif2 %}
+        {{ i }}</br>
+    {% endfor %}
+    </br>
+    </br>
+</form>
+{% endif %}
+{% if not total or one or more %}
+    <p>Подходящих товаров не найдено!</p>
+{% endif %}
 </body>
 </html>

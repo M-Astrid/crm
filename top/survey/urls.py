@@ -22,7 +22,8 @@ urlpatterns = [
     url(r'^clients/(?P<num>[0-9]+)/hist_info/$', login_required(views.client_hist)),
     url(r'^clients/(?P<num>[0-9]+)/hist/$', login_required(views.client_hist)),
     url(r'^clients/(?P<num>[0-9]+)/hist/(?P<ch>[0-9]+)/$', login_required(views.client_hist)),
-    url(r'^clients/(?P<num>[0-9]+)/client-info-form/', login_required(views.client_info_form_view), name='info-form'),
-    url(r'^clients/(?P<num>[0-9]+)/client-info-edit/', login_required(views.client_info_edit), name='edit-info-form'),
-    url(r'^queries/', login_required(views.QueryList.as_view(template_name="queries.html"))),
+    url(r'^clients/(?P<num>[0-9]+)/client-info-form/$', login_required(views.client_info_form_view), name='info-form'),
+    url(r'^clients/(?P<num>[0-9]+)/client-info-edit/$', login_required(views.client_info_edit), name='edit-info-form'),
+    url(r'^queries/$', login_required(views.QueryList.as_view(template_name="queries.html"))),
+    url(r'^queries/(?P<pk>[0-9]+)/decline/$', login_required(views.decline_order)),
 ]

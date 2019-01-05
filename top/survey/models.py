@@ -46,7 +46,7 @@ class Client(models.Model):
     added_at = models.DateTimeField(verbose_name=u'Клиент добавлен', auto_now_add=True)
     changed_at = models.DateTimeField(auto_now=True)
     manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    #query = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL)
+    #query = models.ForeignKey(, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = u'Клиент'
@@ -284,9 +284,9 @@ class Query(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     changed_at = models.DateTimeField(auto_now=True)
 
-    query_items = models.ManyToManyField(Item, verbose_name=u'Запрос', related_name='q_items', symmetrical=False)
-    lead_items = models.ManyToManyField(Item, verbose_name=u'Лид', related_name='l_items', symmetrical=False)
-    order_items = models.ManyToManyField(Item, verbose_name=u'Заявка', related_name='o_items', symmetrical=False, blank=True)
+    query_items = models.ManyToManyField(Item, verbose_name=u'Запрос', null=True, related_name='q_items')
+    lead_items = models.ManyToManyField(Item, verbose_name=u'Лид', null=True, related_name='l_items')
+    order_items = models.ManyToManyField(Item, verbose_name=u'Заявка', null=True, related_name='o_items')
 
     decline_reason = models.TextField(verbose_name=u'Причина отказа', blank=True)
     comments = models.TextField(verbose_name=u'Примечания к заказу', blank=True)

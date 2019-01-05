@@ -74,3 +74,14 @@ class AddContactForm(forms.ModelForm):
     class Meta:
         model = Person
         fields = ['last_name', 'first_name', 'father_name', 'phone_number', 'phone_number2', 'email', 'position']
+
+
+class DeclineForm(forms.ModelForm):
+
+    decline_reason = forms.Textarea
+
+    def clean_decline_reason(self):
+        data = self.cleaned_data.get('decline')
+        if data.strip() == '':
+            raise forms.ValidationError(u'Пожалуйста, укажите причину отказа клиента')
+        return data
