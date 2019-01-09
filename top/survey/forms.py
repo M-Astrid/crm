@@ -59,7 +59,7 @@ class QueryForm(forms.ModelForm):
 
     class Meta:
         model = Query
-        fields = ['product_type', 'form_factor', 'type', 'upgrade', 'certificate', 'fav_brands', 'survey_comments']
+        fields = ['product_type', 'form_factor', 'type', 'upgrade', 'survey_comments']
 
 
 class AddClientForm(forms.ModelForm):
@@ -76,12 +76,6 @@ class AddContactForm(forms.ModelForm):
         fields = ['last_name', 'first_name', 'father_name', 'phone_number', 'phone_number2', 'email', 'position']
 
 
-class DeclineForm(forms.ModelForm):
+class DeclineForm(forms.Form):
 
-    decline_reason = forms.Textarea
-
-    def clean_decline_reason(self):
-        data = self.cleaned_data.get('decline')
-        if data.strip() == '':
-            raise forms.ValidationError(u'Пожалуйста, укажите причину отказа клиента')
-        return data
+    decline_reason = forms.CharField(widget=forms.Textarea, label=u'Причина отказа', required=True)

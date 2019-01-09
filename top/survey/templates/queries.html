@@ -12,7 +12,7 @@ User: {{ request.user }}
     </fieldset>
 </form>
 {% for query in object_list %}
-    Клиент: {{ query.client.form }} {{ query.client.name }} Статус: {{ query.status }} Дата открытия: {{ query.added_at }} Дата посследнего изменения {{ query.changed_at }} <a href="/detail{{ query.id}}">Подробнее</a> </br>
+    Клиент: {{ query.client.form }} {{ query.client.name }} Статус: {{ query.status }} Дата открытия: {{ query.added_at }} Дата последнего изменения {{ query.changed_at }} {{ query.status }} <a href="/detail{{ query.id}}">Подробнее</a> </br>
 {% endfor %}
 
 <a href="/main/">На главную</a>

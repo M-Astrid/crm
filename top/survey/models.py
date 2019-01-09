@@ -142,6 +142,13 @@ class ClientChange(models.Model):
         ordering = ['-id']
 
 
+class PriceCat(models.Model):
+    objects = models.Manager()
+
+    index = models.IntegerField()
+    name = models.CharField(max_length=64)
+
+
 class Item(models.Model):
 
     objects = models.Manager()
@@ -153,9 +160,9 @@ class Item(models.Model):
     )
 
     PRICE_CAT = (
-        (u'(1)Premium', u'(1)Premium'),
-        (u'(2)Средняя цен. кат.', u'(2)Средняя цен. кат.'),
-        (u'(3)No name', u'(3)No name'),
+        (1, 1),
+        (2, 2),
+        (3, 3),
     )
 
     PR_TYPES = (
@@ -163,12 +170,6 @@ class Item(models.Model):
         (u'СХД', u'СХД'),
     )
 
-    CERTIFICATE = (
-        (u'?', u'?'),
-        (u'ТОРП', u'ТОРП'),
-        (u'СТ1', u'СТ1'),
-        (u'EAC', u'EAC'),
-    )
 
     FORM_FACT = (
         (u'Форм-фактор Rack', u'Форм-фактор Rack'),
@@ -206,15 +207,16 @@ class Item(models.Model):
     product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
     form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', max_length=64, blank=True, null=True, choices=FORM_FACT)
     type = models.CharField(verbose_name=u'Тип СХД', max_length=64, blank=True, null=True, choices=SHD_TYPES)
-    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, default=u'?', choices=CERTIFICATE)
     upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
-    #ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, choices=KRITERII)
-    #torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, choices=KRITERII)
-    #eac = models.CharField(verbose_name=u'EAC', max_length=8, choices=KRITERII)
+
+    ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, choices=KRITERII)
+    torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, choices=KRITERII)
+    eac = models.CharField(verbose_name=u'EAC', max_length=8, choices=KRITERII)
+
     sanctions = models.CharField(verbose_name=u'Санкции', max_length=8, choices=DANET)
     crimea = models.CharField(verbose_name=u'Крым', max_length=8, choices=DANET)
     imp = models.CharField(verbose_name=u'Импортозамещение', max_length=6, blank=True, choices=DANET)
-    price_bracket = models.CharField(verbose_name=u'Бюджет', max_length=64, choices=PRICE_CAT)
+    price_bracket = models.IntegerField(verbose_name=u'Бюджет', choices=PRICE_CAT)
 
 
     class Meta:
@@ -223,9 +225,36 @@ class Item(models.Model):
         ordering = ['group', 'price_bracket', 'vendor2']
 
 
+class Vendor(models.Model):
+
+    objects = models.Manager()
+
+    name = models.CharField(verbose_name=u'Название', max_length=64, unique=True)
+    priority = models.IntegerField(verbose_name=u'Приоритет выдачи в списке(0-10)', blank=True, default=0)
+    price_cat = models.IntegerField(verbose_name=u'Ценовая категория')
+
+
+class Certificate(models.Model):
+
+    objects = models.Manager()
+
+    CERTIFICATE = (
+        (u'ТОРП', u'ТОРП'),
+        (u'СТ1', u'СТ1'),
+        (u'EAC', u'EAC'),
+    )
+
+    name = models.CharField(verbose_name=u'Название', max_length=64)
+
+
 class Query(models.Model):
 
     objects = models.Manager()
+
+    KRITERII = (
+        ('+','+'),
+        ('-','-'),
+    )
 
     STATUSES = (
         (u'Запрос', u'Запрос'),
@@ -263,17 +292,9 @@ class Query(models.Model):
         (u'(3)No name', u'(3)No name'),
     )
 
-    CERTIFICATE = (
-        (u'?', u'?'),
-        (u'ТОРП', u'ТОРП'),
-        (u'СТ1', u'СТ1'),
-        (u'EAC', u'EAC'),
-    )
-
     DANET = (
         (u'Да', u'Да'),
         (u'Нет', u'Нет'),
-        (u'?', u'?'),
     )
 
     name = models.CharField(verbose_name=u'Название заказа', max_length=128, blank=True)
@@ -284,9 +305,9 @@ class Query(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     changed_at = models.DateTimeField(auto_now=True)
 
-    query_items = models.ManyToManyField(Item, verbose_name=u'Запрос', null=True, related_name='q_items')
-    lead_items = models.ManyToManyField(Item, verbose_name=u'Лид', null=True, related_name='l_items')
-    order_items = models.ManyToManyField(Item, verbose_name=u'Заявка', null=True, related_name='o_items')
+    query_items = models.ManyToManyField(Item, verbose_name=u'Запрос', blank=True, related_name='q_items')
+    lead_items = models.ManyToManyField(Item, verbose_name=u'Лид', blank=True, related_name='l_items')
+    order_items = models.ManyToManyField(Item, verbose_name=u'Заявка', blank=True, related_name='o_items')
 
     decline_reason = models.TextField(verbose_name=u'Причина отказа', blank=True)
     comments = models.TextField(verbose_name=u'Примечания к заказу', blank=True)
@@ -297,8 +318,13 @@ class Query(models.Model):
     form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', blank=True, max_length=64, null=True, choices=FORM_FACT)
     type = models.CharField(verbose_name=u'Тип СХД', max_length=64, blank=True, null=True, choices=SHD_TYPES)
     upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
-    certificate = models.CharField(verbose_name=u'Сертификация', max_length=32, default=u'EAC', choices=CERTIFICATE)
-    fav_brands = models.CharField(verbose_name=u'Ценовая категория предпочитаемых брендов', max_length=128, choices=PRICE_CAT)
+    certificate = models.ManyToManyField(Certificate, verbose_name=u'Сертификат')
+
+    #ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, default=u'-', choices=KRITERII)
+    #torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, default=u'-', choices=KRITERII)
+    #eac = models.CharField(verbose_name=u'EAC', max_length=8, default=u'-', choices=KRITERII)
+
+    vendors = models.ManyToManyField(Vendor, verbose_name=u'Ранее закупали')
 
     survey_comments = models.TextField(verbose_name=u'Примечания к опросу', blank=True)
 

@@ -2,58 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Варианты товаров</title>
+    <title>ЗАПРОС - Варианты товаров</title>
     {% load get_verbose_name %}
 </head>
 <body>
+<a href="/clients/">К списку клиентов</a></br>
+<a href="/main/">На главную</a></br>
 <h3>{{ query.name }}</h3>
 <b>Результаты опроса:</b> </br>
-{% model_field_verbose_name from query.certificate %}: {{ query.certificate }}
-{% model_field_verbose_name from query.fav_brands %}: {{ query.fav_brands }}
 {% model_field_verbose_name from client.imp %}: {{ client.imp }}
 {% model_field_verbose_name from client.sanctions %}: {{ client.sanctions }}
 {% model_field_verbose_name from client.crimea %}: {{ client.crimea }}
+{% model_field_verbose_name from query.certificate %}:
+{% for cert in query.certificate.all %}
+    {{ cert.name }}
+{% endfor %}
+{% model_field_verbose_name from query.vendors %}:
+{% for vendor in query.vendors.all %}
+    {{ vendor.name }}
+{% endfor %}
 </br></br>
-{% if total or one or more %}
+{% if tot or on or mor or vop %}
 
 <form method="post">
-    <button type="submit">Подтвердить выбор товаров</button> <a href="/queries/{{ query.pk }}/decline/">ОТКАЗ</a>
+    <button type="submit">Перевести ЗАПРОС в ЛИД</button> <a href="/queries/{{ query.pk }}/decline/">Закрыть запрос - ОТКАЗ</a>
     </br>
     </br>
     <b>Полное совпадение:</b></br>
+    {% for total in tot %}
     {% for obj in total %}
-        {{ obj.group }}
+        {{ obj.pk }}{{ obj.group }}
         {{ obj.vendor1 }}
         {{ obj.model }}
-        {{ obj.SKU }} <input type="checkbox" name="checks[]" value="obj.pk" /></br>
-    {% endfor %}</br>
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }} <input type="checkbox" name="checks[]" value="obj.pk" /></br>
+    {% endfor %}
+    {% endfor %}
+    </br>
+    <b>Необходимо уточнение:</b></br>
+    {% for vopr in vop %}
+    {% for obj in vopr %}
+        {{ obj.pk }}{{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="obj.pk" /></br>
+    {% endfor %}
+    {% endfor %}
     </br>
     <b>Одно несовпадение:</b></br>
+    {% for one in on %}
     {% for obj in one %}
-        {{ obj.group }}
+        {{ obj.pk }}{{ obj.group }}
         {{ obj.vendor1 }}
-        {{ obj.SKU }} {{ obj.dif }}<input type="checkbox" name="checks[]" value="obj.pk" /></br>
-    {% endfor %}</br>
-    {% for i in dif1 %}
-        {{ i }}</br>
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="obj.pk" /></br>
+    {% endfor %}
+    {% endfor %}
+    {% for dif in dif1 %}
+        {{ dif }}
     {% endfor %}
     </br>
     <b>Более одного:</b></br>
+    {% for more in mor %}
     {% for obj in more %}
-        {{ obj.group }}
+        {{ obj.pk }}{{ obj.group }}
         {{ obj.vendor1 }}
         {{ obj.model }}
-        {{ obj.SKU }} <input type="checkbox" name="checks[]" value="obj.pk" /></br>
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="obj.pk" /></br>
     {% endfor %}
-    {% for i in dif2 %}
-        {{ i }}</br>
     {% endfor %}
     </br>
     </br>
+        {% csrf_token %}
 </form>
 {% endif %}
-{% if not total or one or more %}
-    <p>Подходящих товаров не найдено!</p>
+
+{% if not tot %}
+{% if not vop %}
+{% if not on %}
+{% if not mor %}
+    <p>Подходящих товаров не найдено! <a> Изменить условия поиска </a> </p>
+    <p><a href="/queries/{{ query.pk }}/decline/">Закрыть запрос - ОТКАЗ</a></p>
+{% endif %}
+{% endif %}
+{% endif %}
 {% endif %}
 </body>
 </html>

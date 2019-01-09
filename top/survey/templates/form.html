@@ -10,6 +10,17 @@
 <form method="POST" action="">
     {% csrf_token %}
     {{ form.as_p }}
+    {% if certificates and vendors %}
+    <b>Сертификация:</b></br>
+    {% for cert in certificates %}
+        {{ cert.name }} <input type="checkbox" name="certificates[]" value="{{ cert.name }}" /></br>
+    {% endfor %}
+    </br>
+    <b>Вендоры:</b></br>
+    {% for vendor in vendors %}
+        {{ vendor.name }} <input type="checkbox" name="checks[]" value="{{ vendor.name }}" /></br>
+    {% endfor %}</br>
+    {% endif %}
     <button type="submit">{{ button }}</button>
 </form>
 

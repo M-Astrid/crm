@@ -6,6 +6,8 @@
     <title>{{ client.form }} {{ client.name }}</title>
 </head>
 <body>
+<a href="/clients/">К списку клиентов</a></br>
+<a href="/main/">На главную</a></br>
 {% load get_verbose_name %}
 
 {{ client.form }} {{ client.name }}</br>
@@ -59,8 +61,14 @@
 <a href="delete/">Удалить клиента</a>
 </br>
 </br>
-<a href="/clients/">К списку клиентов</a></br>
-<a href="/main/">На главную</a>
+Открытые заказы:</br>
+{% for q in q_open %}
+    {{ q.name }}</br>
+{% endfor %}
+Архивные заказы:</br>
+{% for q in q_old %}
+    {{ q.name }}</br>
+{% endfor %}
 </body>
 </html>
 

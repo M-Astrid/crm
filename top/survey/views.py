@@ -1,4 +1,7 @@
-from django.db.models import OuterRef, Subquery, Count, F, CharField, ExpressionWrapper, Value, IntegerField
+from collections import Counter
+
+from django.db.models import OuterRef, Subquery, Count, F, CharField, ExpressionWrapper, Value, IntegerField, Func
+from .include.tools import QuerySetSequence
 from django.forms import model_to_dict
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
@@ -7,7 +10,7 @@ from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 import datetime
 
 
-from .models import Client, Query, Person, Item, ClientChange, PersonChange
+from .models import Client, Query, Person, Item, ClientChange, PersonChange, Vendor, Certificate, PriceCat
 from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, \
     AddContactForm, DeclineForm
 
@@ -247,9 +250,13 @@ def client_detail(request, num):
     c = get_object_or_404(Client, id=num)
     changes = ClientChange.objects.filter(client=c)
     contact = Person.objects.filter(client=c)
+    q_open = Query.objects.filter(client=c, status__in=[u'Запрос', u'Лид', u'Заявка'])
+    q_old = Query.objects.filter(client=c, status__in=[u'Успешно реализован', u'Отказ'])
     return render(request, 'client_detail.html', {'client': c,
                                                   'changes': changes,
                                                   'contacts': contact,
+                                                  'q_open': q_open,
+                                                  'q_old': q_old,
                                                   })
 
 
@@ -322,70 +329,153 @@ def new_query(request, num):
             name = u'Заказ на ' + form.cleaned_data.get('product_type') + u' от ' + datetime.datetime.today().strftime("%d.%m.%Y")
             query.name = name
             query.survey = True
-            form.save()
+            query = form.save()
+            vendors = request.POST.getlist('checks[]')
+            vendors = Vendor.objects.filter(name__in=vendors)
+            certificates = request.POST.getlist('certificates[]')
+            certificates = Certificate.objects.filter(name__in=certificates)
+            for cert in certificates:
+                query.certificate.add(cert)
+            for vendor in vendors:
+                query.vendors.add(vendor)
             url = str(query.pk) + '/'
+            #return HttpResponse(query.vendors)
             return HttpResponseRedirect(url)
     else:
         form = QueryForm()
+        vendors = Vendor.objects.all()
+        certificates = Certificate.objects.all()
         return render(request, 'form.html', {'form': form,
+                                             'vendors': vendors,
+                                             'certificates': certificates,
                                              'title': u'Новый запрос',
-                                             'button': u'Подобрать товары',
+                                             'button': u'СОЗДАТЬ ЗАПРОС',
                                              })
 
 
+class QueryUpdate(UpdateView):
+    form_class =
+
+
 def item_list(request, num, qnum):
-    if request.method == "POST":
-        checks = request.POST.getlist('checks')
-        qs = Item.objects.filter(id__in=checks)
     query = Query.objects.get(pk=qnum)
     client = Client.objects.get(pk=num)
-    qs = Item.objects.filter(product_type=query.product_type,
-                             form_factor=query.form_factor,
-                             type=query.type,
-                             upgrade=query.upgrade
-                             )
-    total, one, more, dif1, dif2 = [], [], [], [], []
-    for obj in qs:
-        dif = ''
-        k = 0
-        if obj.certificate != query.certificate:
-            k += 1
-            dif += 'Сертификация '
-        if obj.price_bracket != query.fav_brands:
-            k += 1
-            dif += 'Ценовая категория '
-        if obj.imp != client.imp:
-            k += 1
-            dif += 'Импортозамещение '
-        if obj.sanctions != client.sanctions:
-            k += 1
-            dif += 'Санкции '
-        if obj.crimea != client.crimea:
-            k += 1
-            dif += 'Крым '
+    if request.method == "POST":
+        checks = request.POST.getlist('checks[]')
+        qs = Item.objects.filter(id__in=checks)
+        return HttpResponseRedirect('lead')
+    else:
+        qs = Item.objects.filter(product_type=query.product_type,
+                                 form_factor=query.form_factor,
+                                 type=query.type,
+                                 upgrade=query.upgrade
+                                 )
+        certs = query.certificate.all()
+        q_certs = []
+        for cert in certs:
+            q_certs.append(cert.name)
+        q_vends = query.vendors.all()
 
-        if k == 0:
-            total += [obj.id]
-        if k == 1:
-            one += [obj.id]
-            dif1 += [dif]
-        if k > 1:
-            more += [obj.id]
-            dif2 += [dif]
+        #qs = qs.filter(pk=7)
 
-    tot = qs.filter(id__in=total)
-    on = qs.filter(id__in=one)
-    mor = qs.filter(id__in=more)
+        total, vopr, one, more, dif1, dif2 = [], [], [], [], [], []
+        for obj in qs:
+            dif = ''
+            k = 0
+            v = 0
+            c = 0
+            if obj.eac == u'+' and u'EAC' in q_certs:
+                c += 1
+            if obj.ST1 == u'+' and u'СТ1' in q_certs:
+                c += 1
+            if obj.torp == u'+' and u'ТОРП' in q_certs:
+                c += 1
+            if not c:
+                if obj.eac == u'?' and u'EAC' in q_certs:
+                    v += 1
+                elif obj.ST1 == u'?' and u'СТ1' in q_certs:
+                    v += 1
+                elif obj.torp == u'?' and u'ТОРП' in q_certs:
+                    v += 1
+                else:
+                    k += 1
+                    dif += u'Сертификат '
+            if obj.imp == u'?':
+                v += 1
+            elif obj.imp != client.imp:
+                k += 1
+                dif += 'Импортозамещение '
 
-    return render(request, 'query_result_list.html', {'total': tot,
-                                                      'one': on,
-                                                      'more': mor,
-                                                      'query': query,
-                                                      'client': client,
-                                                      'dif1': dif1,
-                                                      'dif2': dif2,
-                                                      }
-                  )
+            if obj.sanctions == u'?':
+                v += 1
+            elif obj.sanctions != client.sanctions:
+                k += 1
+                dif += 'Санкции '
+
+            if obj.crimea == u'?':
+                v += 1
+            elif obj.crimea != client.crimea:
+                k += 1
+                dif += 'Крым '
+
+            if k == 0 and not v:
+                total += [obj.id]
+            if k == 0 and v:
+                vopr += [obj.id]
+            if k == 1:
+                one += [obj.id]
+                dif1 += [dif]
+            if k > 1:
+                more += [obj.id]
+                #dif2 += [dif]
+        vends = []
+        for v in q_vends:
+            vends.append(v.price_cat)
+        d = [[vends.count(1), 1], [vends.count(2), 2], [vends.count(3), 3]]
+        d = sorted(d)
+
+        if d[2][1] == 1 and d[1][0] == d[0][0]:
+            d[1][1] = 2
+            d[0][1] = 3
+        if d[2][1] == 3 and d[1][0] == d[0][0]:
+            d[1][1] = 2
+            d[0][1] = 1
+
+        tot = qs.filter(id__in=total)
+        tot1 = tot.filter(price_bracket=d[2][1])
+        tot2 = tot.filter(price_bracket=d[1][1])
+        tot3 = tot.filter(price_bracket=d[0][1])
+
+        vop = qs.filter(id__in=vopr)
+
+        vop1 = vop.filter(price_bracket=d[2][1])
+        vop2 = vop.filter(price_bracket=d[1][1])
+        vop3 = vop.filter(price_bracket=d[0][1])
+
+        on = qs.filter(id__in=one)
+
+        on1 = on.filter(price_bracket=d[2][1])
+        on2 = on.filter(price_bracket=d[1][1])
+        on3 = on.filter(price_bracket=d[0][1])
+
+        mor = qs.filter(id__in=more)
+
+        mor1 = mor.filter(price_bracket=d[2][1])
+        mor2 = mor.filter(price_bracket=d[1][1])
+        mor3 = mor.filter(price_bracket=d[0][1])
+
+        #return HttpResponse(q_certs)
+        return render(request, 'query_result_list.html', {'tot': [tot1, tot2, tot3],
+                                                          'vop': [vop1, vop2, vop3],
+                                                          'on': [on1, on2, on3],
+                                                          'mor': [mor1, mor2, mor3],
+                                                          'client': client,
+                                                          'test': qs,
+                                                          'query': query,
+                                                          'dif1': dif1,
+                                                          #'dif2': dif2,
+                                                           }
+                      )
 
 
 def decline_order(request, pk):
