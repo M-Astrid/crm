@@ -10,7 +10,7 @@ from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 import datetime
 
 
-from .models import Client, Query, Person, Item, ClientChange, PersonChange, Vendor, Certificate, PriceCat
+from .models import Client, Query, Person, Item, ClientChange, PersonChange, Vendor, Certificate, PriceCat, QueryChange
 from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, \
     AddContactForm, DeclineForm
 
@@ -338,7 +338,7 @@ def new_query(request, num):
                 query.certificate.add(cert)
             for vendor in vendors:
                 query.vendors.add(vendor)
-            url = str(query.pk) + '/'
+            url = '/queries/%i/' % query.pk
             #return HttpResponse(query.vendors)
             return HttpResponseRedirect(url)
     else:
@@ -354,16 +354,97 @@ def new_query(request, num):
 
 
 class QueryUpdate(UpdateView):
-    form_class =
+
+    model = Query
+    template_name = 'form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.query = get_object_or_404(Query, pk=self.kwargs['pk'])
+        dict = model_to_dict(self.query)
+        self.fields = ['product_type', 'form_factor', 'type', 'upgrade']
+        self.f2 = 'certificate'
+        self.old = {}
+        for i in self.fields:
+            self.old[i] = dict.get(i)
+        self.old[self.f2] = dict.get(self.f2)
+        self.form = QueryForm(initial=dict, instance=self.query)
+        return super(QueryUpdate, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            msg = ''
+            certificates = self.request.POST.getlist('certificates[]')
+            certificates = Certificate.objects.filter(name__in=certificates)
+            for i in self.fields:
+                if self.old.get(i) != form.cleaned_data.get(i):
+                    msg += u'Изменен параметр ' + self.query._meta.get_field(i).verbose_name + '":' + self.old.get(
+                        i) + ' => ' + form.cleaned_data.get(i) + ';\n'
+            if self.old.get(self.f2) != certificates:
+                msg += u'Изменен параметр "Сертификат": '
+                l = len(self.old.get(self.f2))
+                c = 0
+                for i in self.old.get(self.f2):
+                    msg += i.name
+                    c += 1
+                    if c != l:
+                        msg += ', '
+                msg += ' => '
+                l = len(certificates)
+                c = 0
+                for i in certificates:
+                    msg += i.name
+                    c += 1
+                    if c != l:
+                        msg += ', '
+                msg += ';\n'
+            if msg != '':
+                change = QueryChange()
+                change.change = msg
+                change.manager = self.request.user
+                change.query = self.query
+                change.save()
+                query = form.save()
+                query.certificate.clear()
+                for cert in certificates:
+                    query.certificate.add(cert)
+                vendors = self.request.POST.getlist('checks[]')
+                vendors = Vendor.objects.filter(name__in=vendors)
+                query.vendors.clear()
+                for vendor in vendors:
+                    query.vendors.add(vendor)
+                return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(QueryUpdate, self).get_context_data(**kwargs)
+        context['button'] = 'Применить'
+        context['title'] = 'Изменить условия запроса'
+        context['vendors'] = Vendor.objects.all()
+        context['certificates'] = Certificate.objects.all()
+        return context
 
 
-def item_list(request, num, qnum):
-    query = Query.objects.get(pk=qnum)
-    client = Client.objects.get(pk=num)
+def query_changes(request, pk):
+    query = get_object_or_404(Query, pk=pk)
+    changes = QueryChange.objects.filter(query=query).order_by('-id')
+    client = query.client
+    return render(request, 'query_history.html', {
+        'changes': changes,
+        'user': request.user,
+        'client': client,
+        'query': query,
+    })
+
+
+def item_list(request, pk):
+    query = Query.objects.get(pk=pk)
+    client = query.client
     if request.method == "POST":
         checks = request.POST.getlist('checks[]')
-        qs = Item.objects.filter(id__in=checks)
-        return HttpResponseRedirect('lead')
+        if checks:
+            qs = Item.objects.filter(id__in=checks)
+            for i in qs:
+                query.lead_items.add(i)
+            return HttpResponseRedirect('lead')
     else:
         qs = Item.objects.filter(product_type=query.product_type,
                                  form_factor=query.form_factor,
@@ -374,6 +455,7 @@ def item_list(request, num, qnum):
         q_certs = []
         for cert in certs:
             q_certs.append(cert.name)
+
         q_vends = query.vendors.all()
 
         #qs = qs.filter(pk=7)
@@ -440,6 +522,10 @@ def item_list(request, num, qnum):
         if d[2][1] == 3 and d[1][0] == d[0][0]:
             d[1][1] = 2
             d[0][1] = 1
+        if d[2][0] == d[1][0] == d[0][0]:
+            d[2][1] = 1
+            d[1][1] = 2
+            d[0][1] = 3
 
         tot = qs.filter(id__in=total)
         tot1 = tot.filter(price_bracket=d[2][1])

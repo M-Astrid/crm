@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>История изменения запроса</title>
+</head>
+<body>
+<h3>{{ query.name }}</h3>
+<p><b>Клиент: </b> {{ client.form }} "{{ client.name }}"</p>
+{% for ch in changes %}
+    Дата: {{ ch.changed_at }} <br/>
+    {{ ch.change }} <br/>
+    Кем: {{ ch.manager }}<br/><br/>
+{% endfor %}
+</body>
+</html>

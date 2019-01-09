@@ -333,6 +333,18 @@ class Query(models.Model):
         verbose_name_plural = u'Заявки'
         ordering = ['-added_at']
 
+    def get_absolute_url(self):
+        return "/queries/%i/" % self.pk
+
+
+class QueryChange(models.Model):
+    objects = models.Manager()
+
+    query = models.ForeignKey(Query, on_delete=models.CASCADE)
+    manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    change = models.TextField(blank=True)
+
 
 class Block(models.Model):
 

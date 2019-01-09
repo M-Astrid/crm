@@ -21,9 +21,9 @@
 {% for vendor in query.vendors.all %}
     {{ vendor.name }}
 {% endfor %}
+{% if tot or on or mor or vop %}</br>
+<a href="edit/">Изменить условия запроса</a> <a href="history/">История изменений</a>
 </br></br>
-{% if tot or on or mor or vop %}
-
 <form method="post">
     <button type="submit">Перевести ЗАПРОС в ЛИД</button> <a href="/queries/{{ query.pk }}/decline/">Закрыть запрос - ОТКАЗ</a>
     </br>
@@ -78,7 +78,7 @@
 {% if not vop %}
 {% if not on %}
 {% if not mor %}
-    <p>Подходящих товаров не найдено! <a> Изменить условия поиска </a> </p>
+    <p>Подходящих товаров не найдено! <a href="edit/">Изменить условия запроса</a> </p>
     <p><a href="/queries/{{ query.pk }}/decline/">Закрыть запрос - ОТКАЗ</a></p>
 {% endif %}
 {% endif %}
