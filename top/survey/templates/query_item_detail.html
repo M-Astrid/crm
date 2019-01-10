@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Детализация товара</title>
+    {% load get_verbose_name %}
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'survey/css/style.css' %}" />
+</head>
+<body>
+<table border="1">
+<tr>
+    <th></th>
+    <th><div class="{{ dif.imp }}">{% model_field_verbose_name from client.imp %}:</div></th>
+    <th><div class="{{ dif.sanctions }}">{% model_field_verbose_name from client.sanctions %}:</div></th>
+    <th><div class="{{ dif.crimea }}">{% model_field_verbose_name from client.crimea %}:</div></th>
+    <th><div class="{{ dif.cert }}">{% model_field_verbose_name from query.certificate %}:</div></th>
+</tr>
+<tr>
+    <th>Результаты опроса</th>
+    <th><div class="{{ dif.imp }}">{{ client.imp }}</div></th>
+    <th><div class="{{ dif.sanctions }}">{{ client.sanctions }}</div></th>
+    <th><div class="{{ dif.crimea }}">{{ client.crimea }}</div></th>
+    <th><div class="{{ dif.cert }}">{% for cert in query.certificate.all %}
+            {{ cert.name }}
+        {% endfor %}</div></th>
+</tr>
+<tr>
+    <th>Параметры товара</th>
+    <th><div class="{{ dif.imp }}">{{ item.imp }}</div></th>
+    <th><div class="{{ dif.sanctions }}">{{ item.sanctions }}</div></th>
+    <th><div class="{{ dif.crimea }}">{{ item.crimea }}</div></th>
+    <th><div class="{{ dif.cert }}">
+        <table>
+           <tr>
+               <th>EAC</th>
+               <th>ТОРП</th>
+               <th>СТ1</th>
+           </tr>
+           <tr>
+               <th>{{ item.eac }}</th>
+               <th>{{ item.torp }}</th>
+               <th>{{ item.ST1 }}</th>
+           </tr>
+        </table></div>
+        </th>
+</tr>
+</table>
+
+</body>
+</html>

@@ -63,11 +63,11 @@
 </br>
 Открытые заказы:</br>
 {% for q in q_open %}
-    {{ q.name }}</br>
+    <a href="/queries/{{ q.pk }}/">{{ q.name }}</a></br>
 {% endfor %}
 Архивные заказы:</br>
 {% for q in q_old %}
-    {{ q.name }}</br>
+    <a href="/queries/{{ q.pk }}/">{{ q.name }}</a></br>
 {% endfor %}
 </body>
 </html>
