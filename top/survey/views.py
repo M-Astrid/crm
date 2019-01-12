@@ -12,7 +12,7 @@ import datetime
 
 from .models import Client, Query, Person, Item, ClientChange, PersonChange, Vendor, Certificate, PriceCat, QueryChange
 from .forms import LoginForm, ClientsSortingForm, QuerySortingForm, ClientInfoForm, QueryForm, AddClientForm, \
-    AddContactForm, DeclineForm
+    AddContactForm, DeclineForm, CommentaryForm
 
 
 # auth_views------------------------------------------------------------------------------------------------------------
@@ -107,6 +107,45 @@ class AddClient(CreateView):
         return super(AddClient, self).form_valid(form)
 
 
+class ClientEdit(UpdateView):
+    model = Client
+    template_name = 'form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.client = get_object_or_404(Client, pk=self.kwargs['pk'])
+        dict = model_to_dict(self.client)
+        self.fields = ['form', 'name', 'inn']
+        self.old = {}
+        for i in self.fields:
+            self.old[i] = dict.get(i)
+        return super(ClientEdit, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if form.is_valid():
+            msg = ''
+            for i in self.fields:
+                if self.old.get(i) != form.cleaned_data.get(i):
+                    msg += 'Изменено поле ' + self.client._meta.get_field(i).verbose_name + '": ' + self.old.get(
+                        i) + ' => ' + form.cleaned_data.get(i) + ';\n'
+            if msg != '':
+                change = ClientChange()
+                change.change = msg
+                change.ch_type = 'Основная информация'
+                change.manager = self.request.user
+                change.client = self.client
+                change.save()
+                form.save()
+                url = '/clients/%i/' % self.client.pk
+                return HttpResponseRedirect(url)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClientEdit, self).get_context_data(**kwargs)
+        context['button'] = 'Применить'
+        context['title'] = 'Редактировать информацию'
+        return context
+
+
+
 def client_info_edit(request, num):
 
     c = Client.objects.get(pk=num)
@@ -122,7 +161,7 @@ def client_info_edit(request, num):
             msg = ''
             for i in fields:
                 if old.get(i) != form.cleaned_data.get(i):
-                    msg += 'Изменено поле "' + c._meta.get_field(i).verbose_name + '":' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
+                    msg += 'Изменено поле "' + c._meta.get_field(i).verbose_name + '": ' + old.get(i) + ' => ' + form.cleaned_data.get(i) + '\n'
             if msg != '':
                 change = ClientChange(type=old.get('type'), sanctions=old.get('sanctions'), crimea=old.get('crimea'), imp=old.get('imp'))
                 change.change = msg
@@ -193,12 +232,12 @@ class EditContact(UpdateView):
 
     def form_valid(self, form):
         if form.is_valid():
-            msg = 'У контактного лица ' + self.person.last_name + ' ' + self.person.first_name + ' '
+            msg1 = 'У контактного лица ' + self.person.last_name + ' ' + self.person.first_name + ' '
             for i in self.fields:
                 if self.old.get(i) != form.cleaned_data.get(i):
-                    msg += self.person._meta.get_field(i).verbose_name + '":' + self.old.get(
+                    msg = msg1 + 'изменено поле ' + self.person._meta.get_field(i).verbose_name + '": ' + self.old.get(
                         i) + ' => ' + form.cleaned_data.get(i) + ';\n'
-            if msg != '':
+            if msg != msg1:
                 change = ClientChange(last_name=self.old.get('last_name'), first_name=self.old.get('first_name'),
                                       father_name=self.old.get('father_name'), phone_number=self.old.get('phone_number'),
                                       phone_number2=self.old.get('phone_number2'), email=self.old.get('email'),
@@ -283,7 +322,7 @@ def router(request, pk):
         return HttpResponseRedirect('lead/')
     elif status == u'Заказ':
         return HttpResponseRedirect('order/')
-    elif status == u'Закрыт':
+    elif status in [u'Успешно реализован', u'Отказ']:
         return HttpResponseRedirect('closed/')
 
 
@@ -363,6 +402,125 @@ def new_query(request, num):
                                              'title': u'Новый запрос',
                                              'button': u'СОЗДАТЬ ЗАПРОС',
                                              })
+
+def query_card(request, pk, error_message=''):
+    query = get_object_or_404(Query, pk=pk)
+    client = query.client
+    context = {
+        'user': request.user,
+        'query': query,
+        'client': client,
+        'title': query.name,
+        'button': u'Добавить выбранные товары',
+        'error_message': error_message,
+        'survey_buttons_div': 'show',
+        'query_div': 'notActive',
+        'lead_div': 'notActive',
+        'order_div': 'notActive',
+        'closed_div': 'notActive',
+        'final_items': 'hide',
+        'query_buttons_div': 'hide',
+        'lead_buttons_div': 'hide',
+        'order_buttons_div': 'hide',
+        'results_div': 'show',
+        'no_results_div': 'hide',
+        'form': CommentaryForm(initial={'comments': query.survey_comments}),
+               }
+    if query.status == u'Запрос':
+        if request.method == "POST":
+            checks = request.POST.getlist('checks[]')
+            if checks:
+                qs = Item.objects.filter(pk__in=checks)
+                for i in qs:
+                    query.query_items.add(i)
+                url = '/queries/%i/' % query.pk
+                return HttpResponseRedirect(url)
+            else:
+                context['error_message'] = 'Отметьте товары в списке галочкой, чтобы добавить их к выбранному'
+        context['query_buttons_div'] = 'show'
+        context['action'] = 'to-lead/'
+        context['query_div'] = 'active'
+        qs = parser(query, client, exclude=[i.pk for i in query.query_items.all()])
+        if not qs:
+            context['results_div'] = 'hide'
+            context['no_results_div'] = 'show'
+        else:
+            context.update(qs)
+            context.update({'button2': u'Перевести запрос в ЛИД'})
+        #return HttpResponse()
+        return render(request, 'query.html', context)
+
+    if query.status == u'Лид':
+        if request.method == "POST":
+            checks = request.POST.getlist('checks[]')
+            if checks:
+                qs = Item.objects.filter(pk__in=checks)
+                for i in qs:
+                    query.lead_items.add(i)
+                url = '/queries/%i/' % query.pk
+                return HttpResponseRedirect(url)
+            else:
+                context['error_message'] = 'Отметьте товары в списке галочкой, чтобы добавить их в ЛИД'
+        context['lead_buttons_div'] = 'show'
+        context['lead_div'] = 'active'
+        context['action'] = 'create-order/'
+        qs = parser(query, client, exclude=[i.pk for i in query.lead_items.all()])
+        if not qs:
+            context['results_div'] = 'hide'
+            context['no_results_div'] = 'show'
+        else:
+            context.update(qs)
+            context.update({'button2': u'Оформить ЗАЯВКУ'})
+        return render(request, 'query.html', context)
+    if query.status == u'Заявка':
+        if request.method == "POST":
+            checks = request.POST.getlist('checks[]')
+            if checks:
+                qs = Item.objects.filter(pk__in=checks)
+                for i in qs:
+                    query.order_items.add(i)
+                url = '/queries/%i/' % query.pk
+                return HttpResponseRedirect(url)
+            else:
+                context['error_message'] = 'Отметьте товары в списке галочкой, чтобы добавить их в ЗАЯВКУ'
+        context['order_buttons_div'] = 'show'
+        context['order_div'] = 'active'
+        context['action'] = 'confirm-order/'
+        qs = parser(query, client, exclude=[i.pk for i in query.order_items.all()])
+        if not qs:
+            context['results_div'] = 'hide'
+            context['no_results_div'] = 'show'
+        else:
+            context.update(qs)
+            context.update({'button2': u'Оформить СДЕЛКУ'})
+        return render(request, 'query.html', context)
+    if query.status == u'Успешно реализован':
+        context['closed_div'] = 'active'
+        context['final_items'] = 'show'
+        context['results_div'] = 'hide'
+        context['survey_buttons_div'] = 'hide'
+        return render(request, 'query.html', context)
+    if query.status == u'Отказ':
+        context['closed_div'] = 'active'
+        context['results_div'] = 'hide'
+        context['survey_buttons_div'] = 'hide'
+        return render(request, 'query.html', context)
+
+
+def query_to_lead(request, pk):
+    query = get_object_or_404(Query, pk=pk)
+    items = query.query_items.all()
+    if items:
+        query.status = u'Лид'
+        qs = Item.objects.filter(pk__in=[i.pk for i in items])
+        for i in qs:
+            query.lead_items.add(i)
+        url = '/queries/%i/' % query.pk
+        query.save()
+        return HttpResponseRedirect(url)
+    else:
+        msg = u'Необходимо добавить в запрос товары, чтобы перевети его в ЛИД'
+        return query_card(request, pk, error_message=msg)
 
 
 class QueryUpdate(UpdateView):
@@ -447,35 +605,6 @@ def query_changes(request, pk):
     })
 
 
-def query(request, pk):
-    query = Query.objects.get(pk=pk)
-    client = query.client
-    if request.method == "POST":
-        checks = request.POST.getlist('checks[]')
-        if checks:
-            query.status = u'Лид'
-            query.save()
-            qs = Item.objects.filter(pk__in=checks)
-            for i in qs:
-                query.lead_items.add(i)
-            url = '/queries/%i/lead/' % query.pk
-            return HttpResponseRedirect(url)
-    else:
-        qs = parser(query, client)
-        return render(request, 'query_result_list.html', {'tot': [qs[0], qs[1], qs[2]],
-                                                          'vop': [qs[3], qs[4], qs[5]],
-                                                          'on': [qs[6], qs[7], qs[8]],
-                                                          'mor': [qs[9], qs[10], qs[11]],
-                                                          'client': client,
-                                                          'user': request.user,
-                                                          'button': u'Перевести ЗАПРОС в ЛИД',
-                                                          'title': u'ЗАПРОС - Варианты товаров',
-                                                          'query': query,
-                                                           }
-                      )
-
-
-# переписать с гетаттр
 def parser(query, client, exclude=None):
     qs = Item.objects.filter(product_type=query.product_type,
                              form_factor=query.form_factor,
@@ -512,20 +641,11 @@ def parser(query, client, exclude=None):
                 v += 1
             else:
                 k += 1
-        if obj.imp == u'?':
-            v += 1
-        elif obj.imp != client.imp:
-            k += 1
-
-        if obj.sanctions == u'?':
-            v += 1
-        elif obj.sanctions != client.sanctions:
-            k += 1
-
-        if obj.crimea == u'?':
-            v += 1
-        elif obj.crimea != client.crimea:
-            k += 1                                     # ПЕРЕПИСАТЬ С ИСПОЛЬЗОВАНИЕМ getattr
+        for i in ['imp', 'sanctions', 'crimea']:
+            if getattr(obj, i) == u'?':
+                v += 1
+            elif getattr(obj, i) != getattr(client, i):
+                k += 1
 
         if k == 0 and not v:
             total += [obj.id]
@@ -541,7 +661,7 @@ def parser(query, client, exclude=None):
     for v in q_vends:
         vends.append(v.price_cat)
     d = Counter(vends)
-    d = [[d[i], i] for i in range(1,4)]
+    d = [[d[i], i] for i in range(1, 4)]
     d = sorted(d)
 
     if d[2][1] == 1 and d[1][0] == d[0][0]:
@@ -577,85 +697,57 @@ def parser(query, client, exclude=None):
     mor1 = mor.filter(price_bracket=d[2][1])
     mor2 = mor.filter(price_bracket=d[1][1])
     mor3 = mor.filter(price_bracket=d[0][1])
-    return [tot1, tot2, tot3, vop1, vop2, vop3, on1, on2, on3, mor1, mor2, mor3]
 
+    names = {1: 'Premium', 2: 'Middle', 3: 'Base'}
+    price = names[d[2][1]]
 
-def lead(request, pk):
-    query = Query.objects.get(pk=pk)
-    client = query.client
-    if request.method == "POST":
-        checks = request.POST.getlist('checks[]')
-        qs = Item.objects.filter(pk__in=checks)
-        for i in qs:
-            query.lead_items.add(i)
-        query.save()
-    items = query.lead_items.all()
-    exclude = [i.pk for i in items]
-    qs = parser(query, client, exclude=exclude)
-    #return HttpResponse(exclude)
-    return render(request, 'query_result_list.html', {'tot': [qs[0], qs[1], qs[2]],
-                                                          'vop': [qs[3], qs[4], qs[5]],
-                                                          'on': [qs[6], qs[7], qs[8]],
-                                                          'mor': [qs[9], qs[10], qs[11]],
-                                                          'client': client,
-                                                          'items': items,
-                                                          'query': query,
-                                                          'title': u'ЛИД',
-                                                          'button': u'Добавить выбранное в список товаров',
-                                                          'button2': u'Оформить ЗАКАЗ',
-                                                          }
-                      )
+    data = {'tot': [tot1, tot2, tot3], 'vop': [vop1, vop2, vop3], 'on': [on1, on2, on3], 'mor': [mor1, mor2, mor3], 'price_cat': price}
+    return data
 
 
 def create_order(request, pk):
-    query = Query.objects.get(pk=pk)
-    query.status = u'Заказ'
-    query.order_items.clear()
+    query = get_object_or_404(Query, pk=pk)
     items = query.lead_items.all()
-    for i in items:
-        query.order_items.add(i)
-        url = '/queries/%i/order/' % query.pk
-    query.save()
-    return HttpResponseRedirect(url)
-
-
-def order(request, pk):
-    query = Query.objects.get(pk=pk)
-    client = query.client
-    if request.method == "POST":
-        checks = request.POST.getlist('checks[]')
-        qs = Item.objects.filter(pk__in=checks)
+    if items:
+        query.status = u'Заявка'
+        query.order_items.clear()
+        qs = Item.objects.filter(pk__in=[i.pk for i in items])
         for i in qs:
             query.order_items.add(i)
+        url = '/queries/%i/' % query.pk
         query.save()
+        return HttpResponseRedirect(url)
+    else:
+        msg = u'Необходимо добавить в ЛИД товары, чтобы оформить ЗАЯВКУ'
+        return query_card(request, pk, error_message=msg)
+
+
+def confirm_order(request, pk):
+    query = get_object_or_404(Query, pk=pk)
     items = query.order_items.all()
-    exclude = [i.pk for i in items]
-    qs = parser(query, client, exclude=exclude)
-    return render(request, 'query_result_list.html', {'tot': [qs[0], qs[1], qs[2]],
-                                                      'vop': [qs[3], qs[4], qs[5]],
-                                                      'on': [qs[6], qs[7], qs[8]],
-                                                      'mor': [qs[9], qs[10], qs[11]],
-                                                      'client': client,
-                                                      'items': items,
-                                                      'query': query,
-                                                      'title': u'ЗАКАЗ',
-                                                      'button': u'Добавить выбранное в список товаров',
-                                                      'button2': u'Оформить сделку',
-                                                      }
-                  )
+    if items:
+        query.status = u'Успешно реализован'
+        url = '/queries/%i/' % query.pk
+        query.save()
+        return HttpResponseRedirect(url)
+    else:
+        msg = u'Необходимо добавить товары в ЗАЯВКУ, чтобы оформить сделку'
+        return query_card(request, pk, error_message=msg)
 
 
 def remove_item(request, pk, i):
     query = get_object_or_404(Query, pk=pk)
     item = get_object_or_404(Item, pk=i)
-    query.lead_items.remove(item)
-    query.save()
+    if query.status == u'Запрос':
+        query.query_items.remove(item)
+        query.save()
     if query.status == u'Лид':
-        u = 'lead/'
-    if query.status == u'Заказ':
-        u = 'order/'
+        query.lead_items.remove(item)
+        query.save()
+    if query.status == u'Заявка':
+        query.order_items.remove(item)
+        query.save()
     url = '/queries/%i/' % query.pk
-    url += u
     return HttpResponseRedirect(url)
 
 
@@ -673,8 +765,9 @@ def item_detail(request, pk, i):
     c = Counter(vends)
     d = [[c[1], 1], [c[1], 2], [c[1], 3]]
     d = sorted(d)
-    qu['price_cat'] = d[2][1]
-    it['price_cat'] = item.price_bracket
+    names = {1: 'Premium', 2: 'Middle', 3: 'Base'}
+    qu['price_cat'] = names[d[2][1]]
+    it['price_cat'] = names[item.price_bracket]
     qu['cert'] = {i.name for i in query.certificate.all()}
     it['cert'] = set()
     for i in ['ST1', 'torp', 'eac']:
@@ -701,6 +794,8 @@ def item_detail(request, pk, i):
         'query': query,
         'item': item,
         'user': request.user,
+        'qu_price': qu['price_cat'],
+        'it_price': it['price_cat'],
     })
 
 
@@ -713,7 +808,7 @@ def decline_order(request, pk):
             query.decline_reason = form.cleaned_data.get('decline_reason')
             query.status = u'Отказ'
             query.save()
-            url = '/clients/%i/' % client.pk
+            url = '/queries/%i/' % query.pk
             return HttpResponseRedirect(url)
     else:
         form = DeclineForm()
@@ -724,3 +819,11 @@ def decline_order(request, pk):
                                              'user': request.user,
                                              'query': query,
                                              })
+
+
+def edit_commentary(request, pk):
+    query = get_object_or_404(Query, pk=pk)
+    query.survey_comments = request.POST.get('comments')
+    query.save()
+    url = '/queries/%i/' % query.pk
+    return HttpResponseRedirect(url)

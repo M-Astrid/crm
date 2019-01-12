@@ -79,3 +79,7 @@ class AddContactForm(forms.ModelForm):
 class DeclineForm(forms.Form):
 
     decline_reason = forms.CharField(widget=forms.Textarea, label=u'Причина отказа', required=True)
+
+class CommentaryForm(forms.Form):
+
+    comments = forms.CharField(widget=forms.Textarea, max_length=400)

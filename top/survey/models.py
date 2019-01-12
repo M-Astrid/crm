@@ -195,14 +195,14 @@ class Item(models.Model):
         (u'?', u'?'),
     )
 
-    group = models.CharField(max_length=64)
-    model_row = models.CharField(max_length=64)
-    vendor1 = models.CharField(max_length=64)
-    model = models.CharField(max_length=64)
-    SKU = models.CharField(max_length=64)
-    vendor2 = models.CharField(max_length=64)
-    model2 = models.CharField(max_length=64)
-    SKU2 = models.CharField(max_length=64)
+    group = models.CharField(verbose_name='Группа', max_length=64)
+    model_row = models.CharField(verbose_name='Модельный ряд', max_length=64)
+    vendor1 = models.CharField(verbose_name='Вендор', max_length=64)
+    model = models.CharField(verbose_name='Модель', max_length=64)
+    SKU = models.CharField(verbose_name='SKU', max_length=64)
+    vendor2 = models.CharField(verbose_name='Вендор', max_length=64)
+    model2 = models.CharField(verbose_name='Модель', max_length=64)
+    SKU2 = models.CharField(verbose_name='SKU', max_length=64)
 
     product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
     form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', max_length=64, blank=True, null=True, choices=FORM_FACT)
@@ -324,7 +324,7 @@ class Query(models.Model):
     #torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, default=u'-', choices=KRITERII)
     #eac = models.CharField(verbose_name=u'EAC', max_length=8, default=u'-', choices=KRITERII)
 
-    vendors = models.ManyToManyField(Vendor, verbose_name=u'Ранее закупали')
+    vendors = models.ManyToManyField(Vendor, verbose_name=u'Предпочтения')
 
     survey_comments = models.TextField(verbose_name=u'Примечания к опросу', blank=True)
 

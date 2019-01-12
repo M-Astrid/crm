@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    {% load get_verbose_name %}
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'survey/css/style.css' %}" />
+</head>
+<body>
+<h3>{{ query.name }}</h3>
+Статус - {{ query.status }}
+</br>
+</br>
+<div class="survey">
+    <b>Результаты опроса:</b> </br>
+    <table border="1">
+        <tr>
+            <th>{% model_field_verbose_name from client.imp %}:</th>
+            <th>{% model_field_verbose_name from client.sanctions %}:</th>
+            <th>{% model_field_verbose_name from client.crimea %}:</th>
+            <th>{% model_field_verbose_name from query.certificate %}:</th>
+            <th>{% model_field_verbose_name from query.vendors %}:</th>
+            <th>Бюджет:</th>
+        </tr>
+        <tr>
+            <th>{{ client.imp }}</th>
+            <th>{{ client.sanctions }}</th>
+            <th>{{ client.crimea }}</th>
+            <th>{% for cert in query.certificate.all %}
+                    {{ cert.name }}
+                {% endfor %}
+            </th>
+            <th>{% for vendor in query.vendors.all %}
+                    {{ vendor.name }}
+                {% endfor %}
+            </th>
+            <th>{{ price_cat }}</th>
+        </tr>
+    </table>
+
+    <div class="{{ survey_buttons_div }}">
+        <a href="edit/">Изменить условия запроса</a> <a href="history/">История изменений</a></br>
+    </div></br>
+    <form method="post" action="comment/">
+        {% csrf_token %}
+        <b>Комментарии к заказу:</b> <textarea style="width:300px; height:100px;" name="comments">{{ query.survey_comments }}</textarea>
+        <button type="submit">Сохранить</button> </br>
+    </form>
+</div>
+<div class="{{ no_results_div }}">
+    <p>Подходящих товаров не найдено! <a href="edit/">Изменить условия запроса</a> </p>
+    <p><a href="/queries/{{ query.pk }}/decline/">Закрыть запрос - ОТКАЗ</a></p>
+</div>
+<div class="error-message">
+    <p>{{ error_message }}</p>
+</div>
+{% if query.status != 'Успешно реализован' and query.status != 'Отказ' %}
+    <a href="decline/">Закрыть запрос - ОТКАЗ</a></br>
+{% endif %}
+
+<table class="steps">
+    <tr>
+        <th class="st">
+            <div class="{{ query_div }}">
+            <p>Заявка:</p>
+                </div>
+            {% for item in query.query_items.all %}
+                </br>{{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
+            <div class="{{ query_buttons_div }}">
+                <a href="remove{{ item.pk }}/">Удалить</a>
+            </div>
+            {% endfor %}
+            </br>
+            {% if query.query_items.all %}
+            <div class="{{ query_buttons_div }}">
+                <a href="{{ action }}">{{ button2 }}</a>
+            </div>
+            {% endif %}
+        </th>
+        <th class="st">
+            <div class="{{ lead_div }}">
+            <p>Лид:</p>
+                </div>
+            {% for item in query.lead_items.all %}
+                </br>{{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
+                <div class="{{ lead_buttons_div }}">
+                    <a href="offer/">Сформировать КП</a>
+                    <a href="remove{{ item.pk }}/">Удалить</a>
+                </div>
+            {% endfor %}
+            </br>
+            <div class="{{ lead_buttons_div }}">
+                <a href="{{ action }}">{{ button2 }}</a>
+            </div>
+        </th>
+        <th class="st">
+            <div class="{{ order_div }}">
+            <p>Заказ:</p>
+                </div>
+            {% for item in query.order_items.all %}
+                </br>{{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
+                <div class="{{ order_buttons_div }}">
+                    <a href="offer/">Сформировать КП</a>
+                    <a href="remove{{ item.pk }}/">Удалить</a>
+                </div>
+            {% endfor %}
+                </br>
+            <div class="{{ order_buttons_div }}">
+                <a href="{{ action }}">{{ button2 }}</a>
+            </div>
+        </th>
+        <th class="st">
+            <div  class="{{ closed_div }}">
+            <p>Завершено:</p>
+                </div>
+            <div class="{{ final_items }}">
+                {% for item in query.order_items.all %}
+                    {{ item.group }} {{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
+                <a href="offer/">Сформировать КП</a></br>
+                {% endfor %}
+            </div>
+            {% if query.decline_reason %}
+                ОТКАЗ </br> Причина: {{ query.decline_reason }}
+            {% endif %}
+        </th>
+    </tr>
+</table>
+<a name="1">
+<div class="{{ results_div }}">
+    <form method="post" action="">
+        </br>
+        <b>Результаты поиска:</b></br></br>
+
+    <button type="submit">{{ button }}</button></br>
+    <b>Полное совпадение:</b></br>
+    {% for total in tot %}
+    {% for obj in total %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.model }}
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }} <input type="checkbox" name="checks[]" value="{{ obj.pk }}" /></br>
+    {% endfor %}
+    {% endfor %}
+    </br>
+    <b>Необходимо уточнение:</b></br>
+    {% for vopr in vop %}
+    {% for obj in vopr %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
+        <a href="item{{obj.pk}}/">Подробнее</a> </br>
+    {% endfor %}
+    {% endfor %}
+    </br>
+    <b>Одно несовпадение:</b></br>
+    {% for one in on %}
+    {% for obj in one %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
+        <a href="item{{obj.pk}}/">Подробнее</a> </br>
+    {% endfor %}
+    {% endfor %}
+    {% for dif in dif1 %}
+        {{ dif }}
+    {% endfor %}
+    </br>
+    <b>Более одного:</b></br>
+    {% for more in mor %}
+    {% for obj in more %}
+        {{ obj.group }}
+        {{ obj.vendor1 }}
+        {{ obj.model }}
+        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
+        <a href="item{{obj.pk}}/">Подробнее</a> </br>
+    {% endfor %}
+    {% endfor %}
+    </br>
+    </br>
+        {% csrf_token %}
+    </form>
+</div>
+</body>
+</html>

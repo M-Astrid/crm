@@ -14,7 +14,7 @@
     <b>Сертификация:</b></br>
     {% for cert in certificates %}
         {{ cert.name }} {% if cert in query.certificate.all %} <input type="checkbox" name="certificates[]" value="{{ cert.name }}" checked="checked" /> {% endif %}
-                        {% if cert not in query.certificate.all %} <input type="checkbox" name="certificates[]" value="{{ cert.name }}" /> {% endif %}</br>
+                        {% if not cert in query.certificate.all %} <input type="checkbox" name="certificates[]" value="{{ cert.name }}" /> {% endif %}</br>
     {% endfor %}
     </br>
     <b>Вендоры:</b></br>
@@ -23,7 +23,7 @@
         {% if vendor in query.vendors.all %}
          <input type="checkbox" name="checks[]" value="{{ vendor.name }}" checked="checked" /></br>
         {% endif %}
-        {% if vendor not in query.vendors.all %}
+        {% if not vendor in query.vendors.all %}
          <input type="checkbox" name="checks[]" value="{{ vendor.name }}" /></br>
         {% endif %}
     {% endfor %}</br>

@@ -9,24 +9,49 @@
 </head>
 <body>
 <table border="1">
+    <tr>
+    <th>{% model_field_verbose_name from item.group %}</th>
+    <th>{% model_field_verbose_name from item.model_row %}</th>
+    <th>{% model_field_verbose_name from item.vendor1 %}</th>
+    <th>{% model_field_verbose_name from item.model %}</th>
+    <th>{% model_field_verbose_name from item.SKU %}</th>
+    <th>{% model_field_verbose_name from item.vendor2 %}</th>
+    <th>{% model_field_verbose_name from item.model2 %}</th>
+    <th>{% model_field_verbose_name from item.SKU2 %}</th>
+    </tr>
+    <tr>
+        <th>{{ item.group }}</th>
+        <th>{{ item.model_row }}</th>
+        <th>{{ item.vendor1 }}</th>
+        <th>{{ item.model }}</th>
+        <th>{{ item.SKU }}</th>
+        <th>{{ item.vendor2 }}</th>
+        <th>{{ item.model2 }}</th>
+        <th>{{ item.SKU2 }}</th>
+    </tr>
+</table>
+<br/>
+<table border="1">
 <tr>
     <th></th>
-    <th><div class="{{ dif.imp }}">{% model_field_verbose_name from client.imp %}:</div></th>
-    <th><div class="{{ dif.sanctions }}">{% model_field_verbose_name from client.sanctions %}:</div></th>
-    <th><div class="{{ dif.crimea }}">{% model_field_verbose_name from client.crimea %}:</div></th>
-    <th><div class="{{ dif.cert }}">{% model_field_verbose_name from query.certificate %}:</div></th>
+    <th><div class="{{ dif.imp }}">{% model_field_verbose_name from client.imp %}</div></th>
+    <th><div class="{{ dif.sanctions }}">{% model_field_verbose_name from client.sanctions %}</div></th>
+    <th><div class="{{ dif.crimea }}">{% model_field_verbose_name from client.crimea %}</div></th>
+    <th><div class="{{ dif.cert }}">{% model_field_verbose_name from query.certificate %}</div></th>
+    <th><div class="{{ dif.price_cat }}">Бюджет</div></th>
 </tr>
 <tr>
-    <th>Результаты опроса</th>
+    <th>Опрос</th>
     <th><div class="{{ dif.imp }}">{{ client.imp }}</div></th>
     <th><div class="{{ dif.sanctions }}">{{ client.sanctions }}</div></th>
     <th><div class="{{ dif.crimea }}">{{ client.crimea }}</div></th>
     <th><div class="{{ dif.cert }}">{% for cert in query.certificate.all %}
             {{ cert.name }}
         {% endfor %}</div></th>
+    <th><div class="{{ dif.price_cat }}">{{ qu_price }}</div></th>
 </tr>
 <tr>
-    <th>Параметры товара</th>
+    <th>Товар</th>
     <th><div class="{{ dif.imp }}">{{ item.imp }}</div></th>
     <th><div class="{{ dif.sanctions }}">{{ item.sanctions }}</div></th>
     <th><div class="{{ dif.crimea }}">{{ item.crimea }}</div></th>
@@ -44,6 +69,7 @@
            </tr>
         </table></div>
         </th>
+    <th><div class="{{ dif.price_cat }}">{{ it_price }}</div></th>
 </tr>
 </table>
 
