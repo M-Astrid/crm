@@ -28,10 +28,11 @@
 
 <b> Дата:</b> {{ change.changed_at }} <b>Категория: </b>{{ change.ch_type }}</br>
 *Текст при наведении мышкой: {{ change.change }} кем: {{ change.manager }}</br>
-
-<a href="{{ change.id }}">Старая версия</a> *? Сделать отображение старой версии по наведению мышки вместо ссылки?*  </br>
-
+{% if change.delete == True %}
+<a href="{{ change.id }}">Подробнее</a></br>
+{% endif %}
 </br>
+
 {% endfor %}
 </body>
 </html>

@@ -9,6 +9,7 @@
 </head>
 <body>
 <h3>{{ query.name }}</h3>
+<p> Клиент: {{ client.form }} "{{ client.name }}"</br></p>
 Статус - {{ query.status }}
 </br>
 </br>
@@ -32,7 +33,7 @@
                 {% endfor %}
             </th>
             <th>{% for vendor in query.vendors.all %}
-                    {{ vendor.name }}
+                    {{ vendor.name }}</br>
                 {% endfor %}
             </th>
             <th>{{ price_cat }}</th>
@@ -48,9 +49,9 @@
         <button type="submit">Сохранить</button> </br>
     </form>
 </div>
+
 <div class="{{ no_results_div }}">
-    <p>Подходящих товаров не найдено! <a href="edit/">Изменить условия запроса</a> </p>
-    <p><a href="/queries/{{ query.pk }}/decline/">Закрыть запрос - ОТКАЗ</a></p>
+    <p>Подходящих товаров не найдено! Измените условия опроса. </p>
 </div>
 <div class="error-message">
     <p>{{ error_message }}</p>
@@ -58,13 +59,32 @@
 {% if query.status != 'Успешно реализован' and query.status != 'Отказ' %}
     <a href="decline/">Закрыть запрос - ОТКАЗ</a></br>
 {% endif %}
-
+</br>
 <table class="steps">
     <tr>
         <th class="st">
             <div class="{{ query_div }}">
             <p>Заявка:</p>
                 </div>
+        </th>
+        <th class="st">
+            <div class="{{ lead_div }}">
+            <p>Лид:</p>
+                </div>
+        </th>
+        <th class="st">
+            <div class="{{ order_div }}">
+            <p>Заказ:</p>
+                </div>
+        </th>
+        <th class="st">
+            <div  class="{{ closed_div }}">
+            <p>Завершено:</p>
+                </div>
+        </th>
+    </tr>
+    <tr>
+        <th class="st">
             {% for item in query.query_items.all %}
                 </br>{{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
             <div class="{{ query_buttons_div }}">
@@ -79,9 +99,6 @@
             {% endif %}
         </th>
         <th class="st">
-            <div class="{{ lead_div }}">
-            <p>Лид:</p>
-                </div>
             {% for item in query.lead_items.all %}
                 </br>{{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
                 <div class="{{ lead_buttons_div }}">
@@ -95,9 +112,6 @@
             </div>
         </th>
         <th class="st">
-            <div class="{{ order_div }}">
-            <p>Заказ:</p>
-                </div>
             {% for item in query.order_items.all %}
                 </br>{{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
                 <div class="{{ order_buttons_div }}">
@@ -111,9 +125,6 @@
             </div>
         </th>
         <th class="st">
-            <div  class="{{ closed_div }}">
-            <p>Завершено:</p>
-                </div>
             <div class="{{ final_items }}">
                 {% for item in query.order_items.all %}
                     {{ item.group }} {{ item.SKU }} {{ item.SKU2 }} {{ item.vendor2 }}
@@ -137,9 +148,9 @@
     {% for total in tot %}
     {% for obj in total %}
         {{ obj.group }}
-        {{ obj.vendor1 }}
-        {{ obj.model }}
-        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }} <input type="checkbox" name="checks[]" value="{{ obj.pk }}" /></br>
+        {{ obj.SKU }}
+        {{ obj.SKU2 }}
+        {{ obj.vendor2 }} Ценовая категория: {{ obj.price_bracket }} <input type="checkbox" name="checks[]" value="{{ obj.pk }}" /></br>
     {% endfor %}
     {% endfor %}
     </br>
@@ -147,8 +158,9 @@
     {% for vopr in vop %}
     {% for obj in vopr %}
         {{ obj.group }}
-        {{ obj.vendor1 }}
-        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
+        {{ obj.SKU }}
+        {{ obj.SKU2 }}
+        {{ obj.vendor2 }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
         <a href="item{{obj.pk}}/">Подробнее</a> </br>
     {% endfor %}
     {% endfor %}
@@ -157,8 +169,9 @@
     {% for one in on %}
     {% for obj in one %}
         {{ obj.group }}
-        {{ obj.vendor1 }}
-        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
+        {{ obj.SKU }}
+        {{ obj.SKU2 }}
+        {{ obj.vendor2 }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
         <a href="item{{obj.pk}}/">Подробнее</a> </br>
     {% endfor %}
     {% endfor %}
@@ -170,9 +183,9 @@
     {% for more in mor %}
     {% for obj in more %}
         {{ obj.group }}
-        {{ obj.vendor1 }}
-        {{ obj.model }}
-        {{ obj.SKU }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
+        {{ obj.SKU }}
+        {{ obj.SKU2 }}
+        {{ obj.vendor2 }} Ценовая категория: {{ obj.price_bracket }}<input type="checkbox" name="checks[]" value="{{ obj.pk }}" />
         <a href="item{{obj.pk}}/">Подробнее</a> </br>
     {% endfor %}
     {% endfor %}

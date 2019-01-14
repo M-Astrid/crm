@@ -104,6 +104,7 @@ class AddClient(CreateView):
     def form_valid(self, form):
         if is_manager(self.request.user):
             form.instance.manager = self.request.user
+        form.instance.inn = form.cleaned_data.get('inn')
         return super(AddClient, self).form_valid(form)
 
 
@@ -125,7 +126,7 @@ class ClientEdit(UpdateView):
             msg = ''
             for i in self.fields:
                 if self.old.get(i) != form.cleaned_data.get(i):
-                    msg += 'Изменено поле ' + self.client._meta.get_field(i).verbose_name + '": ' + self.old.get(
+                    msg += 'Изменено поле "' + self.client._meta.get_field(i).verbose_name + '": ' + self.old.get(
                         i) + ' => ' + form.cleaned_data.get(i) + ';\n'
             if msg != '':
                 change = ClientChange()
@@ -135,15 +136,14 @@ class ClientEdit(UpdateView):
                 change.client = self.client
                 change.save()
                 form.save()
-                url = '/clients/%i/' % self.client.pk
-                return HttpResponseRedirect(url)
+            url = '/clients/%i/' % self.client.pk
+            return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
         context = super(ClientEdit, self).get_context_data(**kwargs)
         context['button'] = 'Применить'
         context['title'] = 'Редактировать информацию'
         return context
-
 
 
 def client_info_edit(request, num):
@@ -199,7 +199,7 @@ class AddContact(CreateView):
         contact = form.save(commit=False)
         contact.client = self.client
         if form.is_valid():
-            msg = 'Добавлено контактное лицо ' + form.cleaned_data.get('last_name') + ' ' + form.cleaned_data.get('first_name')
+            msg = 'Добавлено контактное лицо ' + form.cleaned_data.get('last_name') + ' ' + form.cleaned_data.get('first_name') + ', ' + form.cleaned_data.get('position')
             change = ClientChange()
             change.ch_type = 'Контактные лица'
             change.change = msg
@@ -227,12 +227,12 @@ class EditContact(UpdateView):
         self.fields = ['last_name', 'first_name', 'father_name', 'phone_number', 'phone_number2', 'email', 'position']
         self.old = {}
         for i in self.fields:
-            self.old[i] = dict.get(i)
+            self.old[i] = str(dict.get(i))
         return super(EditContact, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if form.is_valid():
-            msg1 = 'У контактного лица ' + self.person.last_name + ' ' + self.person.first_name + ' '
+            msg1 = 'У контактного лица ' + str(self.person.last_name) + ' ' + str(self.person.first_name) + ', ' + str(self.person.position) + ' '
             for i in self.fields:
                 if self.old.get(i) != form.cleaned_data.get(i):
                     msg = msg1 + 'изменено поле ' + self.person._meta.get_field(i).verbose_name + '": ' + self.old.get(
@@ -268,11 +268,11 @@ class DeleteContact(DeleteView):
         context = super(DeleteContact, self).get_context_data(**kwargs)
         context['client'] = self.client
         person = get_object_or_404(Person, pk=self.kwargs['pk'])
-        msg = 'Удалено контактное лицо ' + person.last_name + ' ' + person.first_name
+        msg = 'Удалено контактное лицо ' + person.last_name + ' ' + person.first_name + ', ' + person.position
         change = ClientChange(last_name=person.last_name, first_name=person.first_name,
                               father_name=person.father_name, phone_number=person.phone_number,
                               phone_number2=person.phone_number2, email=person.email,
-                              position=person.position)
+                              position=person.position, delete=True)
         change.change = msg
         change.ch_type = 'Контактные лица'
         change.manager = self.request.user
@@ -312,18 +312,6 @@ def client_hist(request, num, ch=None):
     return render(request, template_name, {'client': c,
                                            'changes': changes,
                                            'old': old})
-
-def router(request, pk):
-    query = get_object_or_404(Query, pk=pk)
-    status = query.status
-    if status == u'Запрос':
-        return HttpResponseRedirect('query/')
-    elif status == u'Лид':
-        return HttpResponseRedirect('lead/')
-    elif status == u'Заказ':
-        return HttpResponseRedirect('order/')
-    elif status in [u'Успешно реализован', u'Отказ']:
-        return HttpResponseRedirect('closed/')
 
 
 def client_info_form_view(request, num):
@@ -377,7 +365,11 @@ def new_query(request, num):
         query = Query(client=client, manager=manager, status=u'Запрос')
         form = QueryForm(request.POST, instance=query)
         if form.is_valid():
-            name = u'Заказ на ' + form.cleaned_data.get('product_type') + u' от ' + datetime.datetime.today().strftime("%d.%m.%Y")
+            if 'сервер' in form.cleaned_data.get('product_type').lower():
+                pr_type = 'сервера'
+            if 'схд' in form.cleaned_data.get('product_type').lower():
+                pr_type = 'СХД'
+            name = u'Заказ на ' + pr_type + u' от ' + datetime.datetime.today().strftime("%d.%m.%Y")
             query.name = name
             query.survey = True
             query = form.save()
@@ -403,6 +395,7 @@ def new_query(request, num):
                                              'button': u'СОЗДАТЬ ЗАПРОС',
                                              })
 
+
 def query_card(request, pk, error_message=''):
     query = get_object_or_404(Query, pk=pk)
     client = query.client
@@ -424,7 +417,6 @@ def query_card(request, pk, error_message=''):
         'order_buttons_div': 'hide',
         'results_div': 'show',
         'no_results_div': 'hide',
-        'form': CommentaryForm(initial={'comments': query.survey_comments}),
                }
     if query.status == u'Запрос':
         if request.method == "POST":
@@ -441,13 +433,14 @@ def query_card(request, pk, error_message=''):
         context['action'] = 'to-lead/'
         context['query_div'] = 'active'
         qs = parser(query, client, exclude=[i.pk for i in query.query_items.all()])
-        if not qs:
+        if not (qs['tot'] or qs['vop'] or qs['on'] or qs['mor']):
+            context['price_cat'] = qs['price_cat']
             context['results_div'] = 'hide'
             context['no_results_div'] = 'show'
         else:
             context.update(qs)
             context.update({'button2': u'Перевести запрос в ЛИД'})
-        #return HttpResponse()
+        context['test'] = qs
         return render(request, 'query.html', context)
 
     if query.status == u'Лид':
@@ -465,7 +458,8 @@ def query_card(request, pk, error_message=''):
         context['lead_div'] = 'active'
         context['action'] = 'create-order/'
         qs = parser(query, client, exclude=[i.pk for i in query.lead_items.all()])
-        if not qs:
+        if not (qs['tot'] or qs['vop'] or qs['on'] or qs['mor']):
+            context['price_cat'] = qs['price_cat']
             context['results_div'] = 'hide'
             context['no_results_div'] = 'show'
         else:
@@ -487,7 +481,8 @@ def query_card(request, pk, error_message=''):
         context['order_div'] = 'active'
         context['action'] = 'confirm-order/'
         qs = parser(query, client, exclude=[i.pk for i in query.order_items.all()])
-        if not qs:
+        if not (qs['tot'] or qs['vop'] or qs['on'] or qs['mor']):
+            context['price_cat'] = qs['price_cat']
             context['results_div'] = 'hide'
             context['no_results_div'] = 'show'
         else:
@@ -531,7 +526,7 @@ class QueryUpdate(UpdateView):
     def dispatch(self, request, *args, **kwargs):
         self.query = get_object_or_404(Query, pk=self.kwargs['pk'])
         dict = model_to_dict(self.query)
-        self.fields = ['product_type', 'form_factor', 'type', 'upgrade']
+        self.fields = ['product_type', 'upgrade']
         self.f2 = 'certificate'
         self.old = {}
         for i in self.fields:
@@ -607,8 +602,6 @@ def query_changes(request, pk):
 
 def parser(query, client, exclude=None):
     qs = Item.objects.filter(product_type=query.product_type,
-                             form_factor=query.form_factor,
-                             type=query.type,
                              upgrade=query.upgrade
                              )
     if exclude:
@@ -620,9 +613,8 @@ def parser(query, client, exclude=None):
 
     q_vends = query.vendors.all()
 
-    total, vopr, one, more, dif1, dif2 = [], [], [], [], [], []
+    total, vopr, one, more = [], [], [], []
     for obj in qs:
-        dif = ''
         k = 0
         v = 0
         c = 0
@@ -653,10 +645,8 @@ def parser(query, client, exclude=None):
             vopr += [obj.id]
         if k == 1:
             one += [obj.id]
-            dif1 += [dif]
         if k > 1:
             more += [obj.id]
-            # dif2 += [dif]
     vends = []
     for v in q_vends:
         vends.append(v.price_cat)
@@ -664,16 +654,16 @@ def parser(query, client, exclude=None):
     d = [[d[i], i] for i in range(1, 4)]
     d = sorted(d)
 
-    if d[2][1] == 1 and d[1][0] == d[0][0]:
-        d[1][1] = 2
-        d[0][1] = 3
+    for i in range(2):
+        if d[i][0] == d[i-2][0]:
+            li = [d[i][1], d[i-2][1]]
+            ma = max(li)
+            mi = min(li)
+            d[i][1] = ma
+            d[i-2][1] = mi
     if d[2][1] == 3 and d[1][0] == d[0][0]:
         d[1][1] = 2
         d[0][1] = 1
-    if d[2][0] == d[1][0] == d[0][0]:
-        d[2][1] = 1
-        d[1][1] = 2
-        d[0][1] = 3
 
     tot = qs.filter(id__in=total)
     tot1 = tot.filter(price_bracket=d[2][1])
@@ -702,6 +692,7 @@ def parser(query, client, exclude=None):
     price = names[d[2][1]]
 
     data = {'tot': [tot1, tot2, tot3], 'vop': [vop1, vop2, vop3], 'on': [on1, on2, on3], 'mor': [mor1, mor2, mor3], 'price_cat': price}
+
     return data
 
 
@@ -765,6 +756,18 @@ def item_detail(request, pk, i):
     c = Counter(vends)
     d = [[c[1], 1], [c[1], 2], [c[1], 3]]
     d = sorted(d)
+
+    for i in range(2):
+        if d[i][0] == d[i-2][0]:
+            li = [d[i][1], d[i-2][1]]
+            ma = max(li)
+            mi = min(li)
+            d[i][1] = ma
+            d[i - 2][1] = mi
+    if d[2][1] == 3 and d[1][0] == d[0][0]:
+        d[1][1] = 2
+        d[0][1] = 1
+
     names = {1: 'Premium', 2: 'Middle', 3: 'Base'}
     qu['price_cat'] = names[d[2][1]]
     it['price_cat'] = names[item.price_bracket]

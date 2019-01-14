@@ -10,7 +10,7 @@
 <a href="/main/">На главную</a></br>
 {% load get_verbose_name %}
 
-{{ client.form }} {{ client.name }}</br>
+{{ client.form }} "{{ client.name }}"</br>
 {% model_field_verbose_name from client.inn %}: {{ client.inn }} <a href="edit/">Редактировать</a>
 </br>
 </br>

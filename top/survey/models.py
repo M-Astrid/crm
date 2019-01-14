@@ -124,11 +124,12 @@ class ClientChange(models.Model):
     changed_at = models.DateTimeField(auto_now_add=True)
     ch_type = models.CharField(max_length=64)
     change = models.TextField(blank=True)
+    delete = models.NullBooleanField()
 
-    type = models.CharField(verbose_name=u'Тип организации(old)', max_length=64, blank=True)
-    sanctions = models.CharField(verbose_name=u'Санкции(old)', max_length=6, blank=True)
-    crimea = models.CharField(verbose_name=u'Крым(old)', max_length=6, blank=True)
-    imp = models.CharField(verbose_name=u'Импортозамещение(old)', max_length=6, blank=True)
+    #type = models.CharField(verbose_name=u'Тип организации(old)', max_length=64, blank=True)
+    #sanctions = models.CharField(verbose_name=u'Санкции(old)', max_length=6, blank=True)
+    #crimea = models.CharField(verbose_name=u'Крым(old)', max_length=6, blank=True)
+    #imp = models.CharField(verbose_name=u'Импортозамещение(old)', max_length=6, blank=True)
 
     first_name = models.CharField(verbose_name=u'Имя', max_length=64, blank=True)
     father_name = models.CharField(verbose_name=u'Отчество', max_length=64, blank=True)
@@ -140,6 +141,8 @@ class ClientChange(models.Model):
 
     class Meta:
         ordering = ['-id']
+        verbose_name = u'История клиента'
+        verbose_name_plural = u'Истории клиентов'
 
 
 class PriceCat(models.Model):
@@ -165,28 +168,23 @@ class Item(models.Model):
         (3, 3),
     )
 
-    PR_TYPES = (
-        (u'Сервера', u'Сервера'),
-        (u'СХД', u'СХД'),
-    )
-
-
-    FORM_FACT = (
-        (u'Форм-фактор Rack', u'Форм-фактор Rack'),
-        (u'Форм-фактор Tower', u'Форм-фактор Tower'),
-        (u'Блейд-сервер', u'Блейд-сервер'),
-    )
-
-    SHD_TYPES = (
-        (u'СХД начального уровня', u'СХД начального уровня'),
-        (u'СХД общего назначения', u'СХД общего назначения'),
-        (u'Гибридная СХД', u'Гибридная СХД'),
-        (u'СХД для резервного копирования', u'СХД для резервного копирования'),
-        (u'СХД высокопроизводительного класса', u'СХД высокопроизводительного класса'),
-        (u'СХД система NAS', u'СХД система NAS'),
-        (u'СХД для расширения VMware', u'СХД для расширения VMware'),
-        (u'Программно-определяемая СХД', u'Программно-определяемая СХД'),
-        (u'СХД для видеоконтента', u'СХД для видеоконтента'),
+    PRODUCT_TYPES = (
+        (u'Сервера', (
+            (u'Сервер в форм-факторе Rack', u'Сервер в форм-факторе Rack'),
+            (u'Сервер в форм-факторе Tower', u'Сервер в форм-факторе Tower'),
+            (u'Блейд-сервер', u'Блейд-сервер'),
+        )),
+        (u'СХД', (
+            (u'СХД начального уровня', u'СХД начального уровня'),
+            (u'СХД общего назначения', u'СХД общего назначения'),
+            (u'Гибридная СХД', u'Гибридная СХД'),
+            (u'СХД для резервного копирования', u'СХД для резервного копирования'),
+            (u'СХД высокопроизводительного класса', u'СХД высокопроизводительного класса'),
+            (u'СХД система NAS', u'СХД система NAS'),
+            (u'СХД для расширения VMware', u'СХД для расширения VMware'),
+            (u'Программно-определяемая СХД', u'Программно-определяемая СХД'),
+            (u'СХД для видеоконтента', u'СХД для видеоконтента'),
+        ))
     )
 
     DANET = (
@@ -204,9 +202,7 @@ class Item(models.Model):
     model2 = models.CharField(verbose_name='Модель', max_length=64)
     SKU2 = models.CharField(verbose_name='SKU', max_length=64)
 
-    product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
-    form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', max_length=64, blank=True, null=True, choices=FORM_FACT)
-    type = models.CharField(verbose_name=u'Тип СХД', max_length=64, blank=True, null=True, choices=SHD_TYPES)
+    product_type = models.CharField(verbose_name=u'Тип', max_length=64, null=True, choices=PRODUCT_TYPES)
     upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
 
     ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, choices=KRITERII)
@@ -233,6 +229,11 @@ class Vendor(models.Model):
     priority = models.IntegerField(verbose_name=u'Приоритет выдачи в списке(0-10)', blank=True, default=0)
     price_cat = models.IntegerField(verbose_name=u'Ценовая категория')
 
+    class Meta:
+        verbose_name = u'Вендор'
+        verbose_name_plural = u'Вендоры'
+        ordering = ['-priority']
+
 
 class Certificate(models.Model):
 
@@ -251,11 +252,6 @@ class Query(models.Model):
 
     objects = models.Manager()
 
-    KRITERII = (
-        ('+','+'),
-        ('-','-'),
-    )
-
     STATUSES = (
         (u'Запрос', u'Запрос'),
         (u'Лид', u'Лид'),
@@ -263,27 +259,24 @@ class Query(models.Model):
         (u'Отказ', u'Отказ'),
         (u'Успешно реализован', u'Успешно реализован'),
     )
-    PR_TYPES = (
-        (u'Сервера', u'Сервера'),
-        (u'СХД', u'СХД'),
-    )
 
-    FORM_FACT = (
-        (u'Форм-фактор Rack', u'Форм-фактор Rack'),
-        (u'Форм-фактор Tower', u'Форм-фактор Tower'),
-        (u'Блейд-сервер', u'Блейд-сервер'),
-    )
-
-    SHD_TYPES = (
-        (u'СХД начального уровня', u'СХД начального уровня'),
-        (u'СХД общего назначения', u'СХД общего назначения'),
-        (u'Гибридная СХД', u'Гибридная СХД'),
-        (u'СХД для резервного копирования', u'СХД для резервного копирования'),
-        (u'СХД высокопроизводительного класса', u'СХД высокопроизводительного класса'),
-        (u'СХД система NAS', u'СХД система NAS'),
-        (u'СХД для расширения VMware', u'СХД для расширения VMware'),
-        (u'Программно-определяемая СХД', u'Программно-определяемая СХД'),
-        (u'СХД для видеоконтента', u'СХД для видеоконтента'),
+    PRODUCT_TYPES = (
+        (u'Сервера', (
+            (u'Сервер в форм-факторе Rack', u'Сервер в форм-факторе Rack'),
+            (u'Сервер в форм-факторе Tower', u'Сервер в форм-факторе Tower'),
+            (u'Блейд-сервер', u'Блейд-сервер'),
+        )),
+        (u'СХД', (
+            (u'СХД начального уровня', u'СХД начального уровня'),
+            (u'СХД общего назначения', u'СХД общего назначения'),
+            (u'Гибридная СХД', u'Гибридная СХД'),
+            (u'СХД для резервного копирования', u'СХД для резервного копирования'),
+            (u'СХД высокопроизводительного класса', u'СХД высокопроизводительного класса'),
+            (u'СХД система NAS', u'СХД система NAS'),
+            (u'СХД для расширения VMware', u'СХД для расширения VMware'),
+            (u'Программно-определяемая СХД', u'Программно-определяемая СХД'),
+            (u'СХД для видеоконтента', u'СХД для видеоконтента'),
+        ))
     )
 
     PRICE_CAT = (
@@ -314,15 +307,9 @@ class Query(models.Model):
 
     survey = models.BooleanField(verbose_name=u'Опрос пройден', default=False)
 
-    product_type = models.CharField(verbose_name=u'Направление', max_length=64, null=True, choices=PR_TYPES)
-    form_factor = models.CharField(verbose_name=u'Форм-фактор сервера', blank=True, max_length=64, null=True, choices=FORM_FACT)
-    type = models.CharField(verbose_name=u'Тип СХД', max_length=64, blank=True, null=True, choices=SHD_TYPES)
+    product_type = models.CharField(verbose_name=u'Тип', max_length=64, null=True, choices=PRODUCT_TYPES)
     upgrade = models.CharField(verbose_name=u'Апгрейд', max_length=6, null=True, choices=DANET)
     certificate = models.ManyToManyField(Certificate, verbose_name=u'Сертификат')
-
-    #ST1 = models.CharField(verbose_name=u'СТ1 ГОС образца', max_length=8, default=u'-', choices=KRITERII)
-    #torp = models.CharField(verbose_name=u'Сертификат ТОРП', max_length=8, default=u'-', choices=KRITERII)
-    #eac = models.CharField(verbose_name=u'EAC', max_length=8, default=u'-', choices=KRITERII)
 
     vendors = models.ManyToManyField(Vendor, verbose_name=u'Предпочтения')
 
@@ -344,6 +331,11 @@ class QueryChange(models.Model):
     manager = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     changed_at = models.DateTimeField(auto_now_add=True)
     change = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = u'История заявки'
+        verbose_name_plural = u'Истории заявок'
 
 
 class Block(models.Model):

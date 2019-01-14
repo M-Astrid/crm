@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Версия до {{ old.changed_at }}</title>
+    <title>{{ old.last_name }} {{ old.first_name }}(Удалено)</title>
 </head>
 <body>
-<h1>Версия до {{ old.changed_at }}</h1>
+<h1>Контактное лицо {{ old.last_name }} {{ old.first_name }}(Удалено)</h1>
 
 {% load get_verbose_name %}
 
-{{ client.form }} {{ client.name }}</br>
+<b>Клиент:</b> {{ client.form }} {{ client.name }}</br>
 {% model_field_verbose_name from client.inn %}: {{ client.inn }}
 </br>
 
@@ -17,16 +17,7 @@
 </br>
 
 {% block old_info %}
-
-
-{% if old.ch_type == 'Базовый опрос' %}
-    {% model_field_verbose_name from old.type %}: {{ old.type }} </br>
-    {% model_field_verbose_name from old.sanctions %}:{{ old.sanctions }} </br>
-    {% model_field_verbose_name from old.crimea %}: {{ old.crimea }} </br>
-    {% model_field_verbose_name from old.imp %}: {{ old.imp }} </br>
-{% endif %}
-
-{% if old.ch_type == 'Контактные лица' %}
+<b>Данные контактного лица:</b></br>
     {% model_field_verbose_name from old.last_name %}: {{ old.last_name }} </br>
     {% model_field_verbose_name from old.first_name %}:{{ old.first_name }} </br>
     {% model_field_verbose_name from old.father_name %}: {{ old.father_name }} </br>
@@ -34,7 +25,6 @@
     {% model_field_verbose_name from old.phone_number2 %}: {{ old.phone_number2 }} </br>
     {% model_field_verbose_name from old.email %}: {{ old.email }} </br>
     {% model_field_verbose_name from old.position %}: {{ old.position }} </br>
-{% endif %}
 
 {% endblock %}
 

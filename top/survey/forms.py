@@ -59,14 +59,25 @@ class QueryForm(forms.ModelForm):
 
     class Meta:
         model = Query
-        fields = ['product_type', 'form_factor', 'type', 'upgrade', 'survey_comments']
+        fields = ['product_type', 'upgrade', 'survey_comments']
 
 
 class AddClientForm(forms.ModelForm):
 
+    inn = forms.IntegerField(label=u'ИНН')
+
     class Meta:
         model = Client
-        fields = ['form', 'name', 'inn']
+        fields = ['form', 'name']
+
+    def clean_inn(self):
+        inn = self.cleaned_data.get('inn')
+        if len(str(inn)) > 10:
+            raise forms.ValidationError('Указанный ИНН больше 10 цифр')
+        if len(str(inn)) < 10:
+            raise forms.ValidationError('Указанный ИНН меньше 10 цифр')
+        else:
+            return inn
 
 
 class AddContactForm(forms.ModelForm):
@@ -79,6 +90,7 @@ class AddContactForm(forms.ModelForm):
 class DeclineForm(forms.Form):
 
     decline_reason = forms.CharField(widget=forms.Textarea, label=u'Причина отказа', required=True)
+
 
 class CommentaryForm(forms.Form):
 
